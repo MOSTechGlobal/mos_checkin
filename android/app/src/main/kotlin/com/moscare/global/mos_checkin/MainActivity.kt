@@ -1,4 +1,4 @@
-package com.example.mos_checkin
+package com.moscare.global.mos_checkin
 
 import io.flutter.embedding.android.FlutterActivity
 

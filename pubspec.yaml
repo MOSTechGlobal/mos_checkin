@@ -63,10 +63,10 @@ dependencies:
   flutter_dotenv: ^5.1.0
   flutter_calendar_week: ^3.0.2
   slide_to_act:
-  workmanager:
+#  workmanager:
   alarm: ^3.1.5
-  fluttertoast: ^8.2.8
-  audioplayers: ^6.0.0
+#  fluttertoast: ^8.2.8
+#  audioplayers: ^6.0.0
   get: ^4.6.6
   flutter_screenutil: ^5.9.3
   shimmer:
