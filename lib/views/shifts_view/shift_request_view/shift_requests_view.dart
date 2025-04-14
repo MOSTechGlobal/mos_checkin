@@ -69,7 +69,6 @@ class ShiftRequestsView extends GetView<ShiftRequestViewController> {
                       },
                     ),
                   ),
-                  SizedBox(width: 10.w),
                   GestureDetector(
                     onTap: () => _showCustomMenu(context),
                     child: Image.asset(

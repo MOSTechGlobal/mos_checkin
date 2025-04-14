@@ -61,7 +61,7 @@ class _FormDetailViewState extends State<FormDetailView> {
       final fieldType = field['Type'];
       final fieldLabel = field['Label'] == '' ? null : field['Label'];
       final fieldPlaceholder =
-      field['Placeholder'] == '' ? null : field['Placeholder'];
+          field['Placeholder'] == '' ? null : field['Placeholder'];
       final fieldRequired = field['Required'] == true;
 
       Widget fieldWidget;
@@ -76,11 +76,11 @@ class _FormDetailViewState extends State<FormDetailView> {
             },
             validator: fieldRequired
                 ? (value) {
-              if (value == null || value.isEmpty) {
-                return 'This field is required';
-              }
-              return null;
-            }
+                    if (value == null || value.isEmpty) {
+                      return 'This field is required';
+                    }
+                    return null;
+                  }
                 : null,
           );
           break;
@@ -90,18 +90,18 @@ class _FormDetailViewState extends State<FormDetailView> {
             hintText: fieldPlaceholder ?? fieldLabel,
             keyboardType: TextInputType.number,
             onChanged: (value) {
-              controller.fieldValues[fieldKey] = value; // Use String key
+              controller.fieldValues[fieldKey] = value;
             },
             validator: fieldRequired
                 ? (value) {
-              if (value == null || value.isEmpty) {
-                return 'This field is required';
-              }
-              if (double.tryParse(value) == null) {
-                return 'Please enter a valid number';
-              }
-              return null;
-            }
+                    if (value == null || value.isEmpty) {
+                      return 'This field is required';
+                    }
+                    if (double.tryParse(value) == null) {
+                      return 'Please enter a valid number';
+                    }
+                    return null;
+                  }
                 : null,
           );
           break;
@@ -118,55 +118,53 @@ class _FormDetailViewState extends State<FormDetailView> {
             hintText: fieldPlaceholder ?? fieldLabel,
             validator: fieldRequired
                 ? (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please select an option';
-              }
-              return null;
-            }
+                    if (value == null || value.isEmpty) {
+                      return 'Please select an option';
+                    }
+                    return null;
+                  }
                 : null,
             onChanged: (String? value) {
-              controller.fieldValues[fieldKey] = value; // Use String key
+              controller.fieldValues[fieldKey] = value;
             },
-            value: controller.fieldValues[fieldKey],
+            value: controller.fieldValues[fieldKey] as String?,
             items: options,
           );
           break;
         case 'date':
-          DateTime? initialDate; // Optional initialDate
+          DateTime? initialDate;
           if (controller.fieldValues[fieldKey] != null) {
             try {
-              initialDate = DateTime.parse(controller.fieldValues[fieldKey]);
+              initialDate =
+                  DateTime.parse(controller.fieldValues[fieldKey] as String);
             } catch (e) {
               log('Invalid date format in fieldValues for $fieldKey: ${controller.fieldValues[fieldKey]}');
             }
           }
-
           fieldWidget = CommonDatePicker(
             initialDate: initialDate,
-            // Pass as nullable
             onDateChanged: (date) {
               controller.fieldValues[fieldKey] = date.toIso8601String();
-              setState(() {}); // Update UI to reflect the new date
+              setState(() {});
             },
             label: fieldLabel,
             hintText: initialDate == null
                 ? (fieldPlaceholder ?? fieldLabel ?? 'Select a date')
                 : DateFormat('yyyy-MM-dd').format(initialDate),
-            // Display the selected date as hint
             readOnly: false,
             validator: fieldRequired
                 ? (value) {
-              if (value == null) {
-                return 'Please select a date';
-              }
-              return null;
-            }
+                    if (controller.fieldValues[fieldKey] == null) {
+                      return 'Please select a date';
+                    }
+                    return null;
+                  }
                 : null,
           );
           break;
         case 'checkbox':
           if (!controller.fieldValues.containsKey(fieldKey)) {
-            controller.fieldValues[fieldKey] = false; // Use String key
+            controller.fieldValues[fieldKey] = false;
           }
           fieldWidget = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,14 +172,14 @@ class _FormDetailViewState extends State<FormDetailView> {
               fieldLabel == null || fieldLabel == ''
                   ? const SizedBox()
                   : Padding(
-                padding:
-                EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                child: Text(
-                  fieldLabel ?? '',
-                  style: TextStyle(
-                      fontSize: 14.sp, color: colorScheme.onSurface),
-                ),
-              ),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                      child: Text(
+                        fieldLabel ?? '',
+                        style: TextStyle(
+                            fontSize: 14.sp, color: colorScheme.onSurface),
+                      ),
+                    ),
               Container(
                 decoration: BoxDecoration(
                   color: colorScheme.onPrimary,
@@ -191,7 +189,7 @@ class _FormDetailViewState extends State<FormDetailView> {
                       color: colorScheme.shadow,
                       blurRadius: 2,
                       offset: const Offset(0, 1),
-                    )
+                    ),
                   ],
                 ),
                 padding: EdgeInsets.only(top: 1.h, bottom: 1.h, left: 12.w),
@@ -199,7 +197,7 @@ class _FormDetailViewState extends State<FormDetailView> {
                     onTap: () {
                       setState(() {
                         controller.fieldValues[fieldKey] =
-                        !(controller.fieldValues[fieldKey] as bool);
+                            !(controller.fieldValues[fieldKey] as bool);
                       });
                     },
                     child: Row(
@@ -342,6 +340,7 @@ class _FormDetailViewState extends State<FormDetailView> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
+      backgroundColor: colorScheme.onPrimary,
       body: Obx(() {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
@@ -349,48 +348,48 @@ class _FormDetailViewState extends State<FormDetailView> {
           return Expanded(
             child: Center(
               child: CommonErrorField(
-                image: 'assets/images/no_result.png',
-                message: controller.errorMessage.value,
-                customMessage:
-                'This is the Forms Screen where you can manage forms for the client profile. From here, you can add, review, and track all necessary forms required for the client.',
-              ),
+                  image: 'assets/images/no_result.png',
+                  message: controller.errorMessage.value,
+                  customMessage:
+                      "This is the Forms Screen, where you can manage forms linked to the client profile. Add, review, and track all required forms from here."),
             ),
           );
         } else {
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                CommonAppBar(
-                  title: 'Form Details',
-                  iconPath: 'assets/icons/forms.png',
-                  colorScheme: colorScheme,
-                ),
-                Container(
-                  width: double.infinity,
-                  margin:
-                  EdgeInsets.symmetric(horizontal: 14.w, vertical: 20.h),
-                  decoration: BoxDecoration(
-                    color: colorScheme.onPrimary,
-                    borderRadius: BorderRadius.circular(12.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: colorScheme.shadow,
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      )
-                    ],
-                  ),
-                  child: Padding(
+          return Column(
+            children: [
+              CommonAppBar(
+                title: 'Form Details',
+                iconPath: 'assets/icons/forms.png',
+                colorScheme: colorScheme,
+              ),
+              SizedBox(height: 4.h),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Container(
+                    width: double.infinity,
+                    margin:
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
                     padding:
-                    EdgeInsets.symmetric(vertical: 8.h, horizontal: 12.w),
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
+                    decoration: BoxDecoration(
+                      color: colorScheme.onPrimary,
+                      borderRadius: BorderRadius.circular(12.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: colorScheme.shadow,
+                          blurRadius: 2,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
                     child: Column(
                       children: [
                         widget.isCompleted
                             ? Form(child: _buildReadOnlyFormFields())
                             : Form(
-                          key: controller.formKey,
-                          child: _buildEditableFormFields(),
-                        ),
+                                key: controller.formKey,
+                                child: _buildEditableFormFields(),
+                              ),
                         if (!controller.isLoading.value &&
                             controller.errorMessage.value.isEmpty &&
                             !widget.isCompleted)
@@ -401,9 +400,9 @@ class _FormDetailViewState extends State<FormDetailView> {
                               onPressed: controller.isSubmitting.value
                                   ? null
                                   : () {
-                                controller.submitForm(
-                                    context, widget.formId.toString());
-                              },
+                                      controller.submitForm(
+                                          context, widget.formId.toString());
+                                    },
                               isSaving: controller.isSubmitting.value,
                             ),
                           ),
@@ -411,8 +410,8 @@ class _FormDetailViewState extends State<FormDetailView> {
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           );
         }
       }),
