@@ -1,4 +1,5 @@
 import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -11,9 +12,10 @@ class CommonTimePicker extends FormField<DateTime> {
     super.key,
     DateTime? initialTime,
     required Function(DateTime) onTimeChanged,
-    Color? pickerColor,
     required String hintText,
     String? label,
+    DateTime? associatedDate, // <-- New param to pass selected date
+    Color? pickerColor,
     EdgeInsets? contentPadding,
     bool? readOnly,
     bool enabled = true,
@@ -25,7 +27,22 @@ class CommonTimePicker extends FormField<DateTime> {
       void showTimePickerModal(BuildContext context) {
         if (readOnly == true || !enabled) return;
 
+        DateTime now = DateTime.now();
         DateTime tempTime = state.value ?? initialTime ?? DateTime.now();
+
+        bool isToday = associatedDate != null &&
+            associatedDate.year == now.year &&
+            associatedDate.month == now.month &&
+            associatedDate.day == now.day;
+
+        DateTime minSelectableTime = isToday
+            ? DateTime(
+            associatedDate!.year,
+            associatedDate.month,
+            associatedDate.day,
+            now.hour,
+            now.minute)
+            : DateTime(2000); // Basically no restriction
 
         showDialog(
           context: context,
@@ -50,7 +67,9 @@ class CommonTimePicker extends FormField<DateTime> {
                           'Select Time',
                           style: TextStyle(
                             fontSize: 14.sp,
-                            color: Theme.of(context).colorScheme.onSurface,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -62,14 +81,18 @@ class CommonTimePicker extends FormField<DateTime> {
                             decoration: BoxDecoration(
                               color: Colors.transparent,
                               border: Border.all(
-                                color: Theme.of(context).colorScheme.error,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .error,
                                 width: 2,
                               ),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
                               Icons.close,
-                              color: Theme.of(context).colorScheme.error,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .error,
                               size: 16.sp,
                             ),
                           ),
@@ -79,16 +102,25 @@ class CommonTimePicker extends FormField<DateTime> {
                     SizedBox(height: 16.h),
                     SizedBox(
                       height: 200.h,
-                      child: CupertinoDatePicker(
-                        mode: CupertinoDatePickerMode.time,
-                        initialDateTime: tempTime,
-                        minimumDate: DateTime.now(), // Restrict past time
-                        onDateTimeChanged: (DateTime newTime) {
-                          tempTime = newTime;
+                      child: StatefulBuilder(
+                        builder: (context, setState) {
+                          return CupertinoDatePicker(
+                            mode: CupertinoDatePickerMode.time,
+                            initialDateTime: tempTime.isBefore(DateTime.now()) && isToday
+                                ? DateTime.now()
+                                : tempTime,
+                            minimumDate: isToday ? DateTime.now() : null, // This is the key!
+                            onDateTimeChanged: (DateTime newTime) {
+                              setState(() {
+                                tempTime = newTime;
+                              });
+                            },
+                            use24hFormat: false,
+                          );
                         },
-                        use24hFormat: false,
                       ),
                     ),
+
                     SizedBox(height: 16.h),
                     CommonButton(
                       text: 'Save',
@@ -121,7 +153,8 @@ class CommonTimePicker extends FormField<DateTime> {
                 label,
                 style: TextStyle(
                   fontSize: 14.sp,
-                  color: Theme.of(state.context).colorScheme.onSurface,
+                  color:
+                  Theme.of(state.context).colorScheme.onSurface,
                 ),
               ),
             ),
@@ -193,17 +226,4 @@ class CommonTimePicker extends FormField<DateTime> {
       );
     },
   );
-
-  @override
-  FormFieldValidator<DateTime>? get validator {
-    return (value) {
-      if (value == null) {
-        return 'Please select a time';
-      }
-      if (value.isBefore(DateTime.now())) {
-        return 'Selected time cannot be in the past';
-      }
-      return null;
-    };
-  }
 }

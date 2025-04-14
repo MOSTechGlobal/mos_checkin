@@ -67,7 +67,7 @@ class ShiftRequestViewController extends GetxController {
     Map<String, List<Map<String, dynamic>>> grouped = {};
 
     for (var request in filteredShiftRequests) {
-      final requestDate = request['RequestDate'] as String?;
+      final requestDate = request['ShiftDate'] as String?;
       if (requestDate == null) continue;
 
       final formattedDate = DateFormat('yyyy-MM-dd')

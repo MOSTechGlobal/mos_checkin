@@ -108,7 +108,7 @@ class MakeShiftRequestController extends GetxController {
   String formSentence() {
     // ... (unchanged)
     if (!isRecurringShift.value) {
-      return 'This is a one-time shift on ${startDateController.value} from ${startTimeController.value} to ${endTimeController.value}.';
+      return 'This is a one-time shift on ${startDateController.value} from ${startTimeController.value} to ${endDateController.value} ${endTimeController.value}.';
     } else if (selectedRecurringShiftType.value == 'days') {
       return 'This is a daily shift recurring every ${repeatEveryController.text.isEmpty ? '1' : repeatEveryController.text} day(s).';
     } else if (selectedRecurringShiftType.value == 'weeks') {
@@ -127,6 +127,7 @@ class MakeShiftRequestController extends GetxController {
 
   Future<void> fetchShiftServices(dynamic clientID, [String? shiftType]) async {
     try {
+      isServiceLoading.value = true;
       final effectiveShiftType = shiftType ?? 'standard';
       log('Fetching shift services for ClientID: $clientID, ShiftType: $effectiveShiftType');
       final shiftServicesData = await Api.get('getServiceAsPerAgreement/$clientID/$effectiveShiftType');
@@ -147,6 +148,8 @@ class MakeShiftRequestController extends GetxController {
       log('Error fetching shift services: $e');
       shiftServices.clear();
       filteredServices.clear();
+    }finally{
+      isServiceLoading.value = false;
     }
   }
 

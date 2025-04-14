@@ -26,213 +26,6 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
     required this.clientName,
   });
 
-  // void _showServicePicker(BuildContext context) {
-  //   Get.dialog(
-  //     ServiceModalView(
-  //       allServices: services.toSet(),
-  //       currentServices: controller.selectedService.value.isNotEmpty
-  //           ? {
-  //               services.firstWhere((service) =>
-  //                   service['Service_Code'] == controller.selectedService.value)
-  //             }
-  //           : {},
-  //       agreementCode: clientId,
-  //       onAddServices: (selectedServices) {
-  //         controller.selectedService.value =
-  //             selectedServices.first['Service_Code'];
-  //       },
-  //     ),
-  //   );
-  // }
-
-  // // Widget for basic details (name, date, and time pickers)
-  // Widget _buildBasicDetails(ColorScheme colorScheme) {
-  //   return Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: [
-  //       Text(
-  //         "Add Details",
-  //         style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
-  //       ),
-  //       SizedBox(height: 10.h),
-  //       CommonTextField(
-  //         label: 'First and Last Name',
-  //         hintText: 'First and Last Name',
-  //         readOnly: true,
-  //         controller: TextEditingController()..text = clientName,
-  //       ),
-  //       SizedBox(height: 10.h),
-  //       CommonDatePicker(
-  //         onDateChanged: (pickedDate) {
-  //           controller.selectedStartDate.value = pickedDate;
-  //           controller.startDateController.value =
-  //               DateFormat('dd-MM-yyyy').format(pickedDate);
-  //           controller.endDateController.value =
-  //               DateFormat('dd-MM-yyyy').format(pickedDate);
-  //         },
-  //         hintText: 'Select start date',
-  //         label: 'Choose start date and time',
-  //       ),
-  //       SizedBox(height: 10.h),
-  //
-  //       CommonTimePicker(
-  //         onTimeChanged: (pickedTime) {
-  //           final now = DateTime.now();
-  //           final selectedDateTime = DateTime(now.year, now.month, now.day,
-  //               pickedTime.hour, pickedTime.minute);
-  //           final formattedTime =
-  //               DateFormat('hh:mm aa').format(selectedDateTime);
-  //           controller.startTimeController.value = formattedTime;
-  //         },
-  //         hintText: 'Select start time',
-  //         enabled: controller.selectedStartDate.value != null,
-  //         // Add this to handle the tap when disabled
-  //         onTapWhenDisabled: () {
-  //           Get.snackbar('Error', 'Select Start Time',
-  //               backgroundColor: colorScheme.error,
-  //               colorText: colorScheme.onPrimary);
-  //         },
-  //       ),
-  //       SizedBox(height: 10.h),
-  //
-  //       CommonDatePicker(
-  //         onDateChanged: (pickedDate) {
-  //           controller.selectedEndDate.value = pickedDate;
-  //           controller.endDateController.value =
-  //               DateFormat('dd-MM-yyyy').format(pickedDate);
-  //         },
-  //         hintText: 'Select end date',
-  //         label: 'Choose end date and time',
-  //         enabled: controller.selectedStartDate.value != null &&
-  //             controller.startTimeController.value.isNotEmpty,
-  //         // Check both start date and time
-  //         onTapWhenDisabled: () {
-  //           Get.snackbar(
-  //               'Error',
-  //               controller.selectedStartDate.value == null
-  //                   ? 'Please select a start date first'
-  //                   : 'Please select a start time first',
-  //               backgroundColor: colorScheme.error,
-  //               colorText: colorScheme.onPrimary);
-  //         },
-  //       ),
-  //       SizedBox(height: 10.h),
-  //       CommonTimePicker(
-  //         onTimeChanged: (pickedTime) {
-  //           final now = DateTime.now();
-  //           final selectedDateTime = DateTime(now.year, now.month, now.day,
-  //               pickedTime.hour, pickedTime.minute);
-  //           final formattedTime =
-  //               DateFormat('hh:mm aa').format(selectedDateTime);
-  //           controller.endTimeController.value = formattedTime;
-  //         },
-  //         hintText: 'Select end time',
-  //         enabled: controller.selectedStartDate.value != null &&
-  //             controller.startTimeController.value.isNotEmpty &&
-  //             controller.selectedEndDate.value != null,
-  //         // Require start date, start time, and end date
-  //         onTapWhenDisabled: () {
-  //           Get.snackbar(
-  //               'Error',
-  //               controller.selectedStartDate.value == null
-  //                   ? 'Please select a start date first'
-  //                   : controller.startTimeController.value.isEmpty
-  //                       ? 'Please select a start time first'
-  //                       : 'Please select an end date first',
-  //               backgroundColor: colorScheme.error,
-  //               colorText: colorScheme.onPrimary);
-  //
-  //           ScaffoldMessenger.of(Get.context!).showSnackBar(
-  //             SnackBar(
-  //               content: Text(
-  //                 controller.selectedStartDate.value == null
-  //                     ? 'Please select a start date first'
-  //                     : controller.startTimeController.value.isEmpty
-  //                         ? 'Please select a start time first'
-  //                         : 'Please select an end date first',
-  //               ),
-  //               duration: const Duration(seconds: 2),
-  //             ),
-  //           );
-  //         },
-  //       ),
-  //     ],
-  //   );
-  // }
-  //
-  // // Widget for service picker
-  // Widget _buildServicePicker(BuildContext context, ColorScheme colorScheme) {
-  //   return Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: [
-  //       Padding(
-  //         padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-  //         child: Text(
-  //           'Choose a service',
-  //           style: TextStyle(fontSize: 14.sp, color: colorScheme.onSurface),
-  //         ),
-  //       ),
-  //       GestureDetector(
-  //         onTap: () => _showServicePicker(context),
-  //         child: Container(
-  //           padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 10.w),
-  //           decoration: BoxDecoration(
-  //             color: colorScheme.onPrimary,
-  //             borderRadius: BorderRadius.circular(12),
-  //             boxShadow: [
-  //               BoxShadow(
-  //                 color: Theme.of(context).colorScheme.shadow,
-  //                 blurRadius: 2,
-  //                 offset: const Offset(0, 1),
-  //               )
-  //             ],
-  //           ),
-  //           child: Row(
-  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //             children: [
-  //               Expanded(
-  //                 child: Text(
-  //                   controller.selectedService.value.isNotEmpty
-  //                       ? services.firstWhere(
-  //                           (service) =>
-  //                               service['Service_Code'].toString() ==
-  //                               controller.selectedService.value,
-  //                           orElse: () => {
-  //                                 'Description': 'Service not found'
-  //                               })['Description']
-  //                       : 'Select Service',
-  //                   style: TextStyle(
-  //                     color: controller.selectedService.value.isEmpty
-  //                         ? colorScheme.onSurface.withOpacity(0.6)
-  //                         : colorScheme.onSurface,
-  //                     fontSize: controller.selectedService.value.isNotEmpty
-  //                         ? 14.sp
-  //                         : 12.sp,
-  //                   ),
-  //                   maxLines: null,
-  //                 ),
-  //               ),
-  //               Container(
-  //                 width: 16.w,
-  //                 height: 16.h,
-  //                 decoration: BoxDecoration(
-  //                   color: colorScheme.onSurface,
-  //                   shape: BoxShape.circle,
-  //                 ),
-  //                 child: Icon(
-  //                   Icons.arrow_drop_down,
-  //                   color: Colors.white,
-  //                   size: 16.sp,
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
-
   Widget _buildBasicDetails(BuildContext context, ColorScheme colorScheme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -262,19 +55,37 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
         ),
         SizedBox(height: 10.h),
         CommonTimePicker(
+          associatedDate: controller.selectedStartDate.value, // <-- pass the date
           onTimeChanged: (pickedTime) {
             final now = DateTime.now();
             final selectedDateTime = DateTime(now.year, now.month, now.day,
                 pickedTime.hour, pickedTime.minute);
-            final formattedTime = DateFormat('hh:mm aa').format(selectedDateTime);
-            controller.startTimeController.value = formattedTime;
+            controller.startTimeController.value =
+                DateFormat('hh:mm aa').format(selectedDateTime);
           },
           hintText: 'Select start time',
           enabled: controller.selectedStartDate.value != null,
           onTapWhenDisabled: () {
-            Get.snackbar('Attention', 'Please select a start date first',colorText: colorScheme.onPrimary,backgroundColor: colorScheme.error);
+            Get.snackbar('Attention', 'Please select a start date first',
+                colorText: colorScheme.onPrimary,
+                backgroundColor: colorScheme.error);
           },
         ),
+
+        // CommonTimePicker(
+        //   onTimeChanged: (pickedTime) {
+        //     final now = DateTime.now();
+        //     final selectedDateTime = DateTime(now.year, now.month, now.day,
+        //         pickedTime.hour, pickedTime.minute);
+        //     final formattedTime = DateFormat('hh:mm aa').format(selectedDateTime);
+        //     controller.startTimeController.value = formattedTime;
+        //   },
+        //   hintText: 'Select start time',
+        //   enabled: controller.selectedStartDate.value != null,
+        //   onTapWhenDisabled: () {
+        //     Get.snackbar('Attention', 'Please select a start date first',colorText: colorScheme.onPrimary,backgroundColor: colorScheme.error);
+        //   },
+        // ),
         SizedBox(height: 10.h),
         CommonDatePicker(
           initialDate: controller.selectedStartDate.value,
@@ -295,25 +106,42 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
         ),
         SizedBox(height: 10.h),
         CommonTimePicker(
+          associatedDate: controller.selectedEndDate.value, // <-- pass the date
           onTimeChanged: (pickedTime) {
             final now = DateTime.now();
             final selectedDateTime = DateTime(now.year, now.month, now.day,
                 pickedTime.hour, pickedTime.minute);
-            final formattedTime = DateFormat('hh:mm aa').format(selectedDateTime);
-            controller.endTimeController.value = formattedTime;
+            controller.endTimeController.value =
+                DateFormat('hh:mm aa').format(selectedDateTime);
           },
-          hintText: 'Select end time',
-          enabled: controller.selectedStartDate.value != null &&
-              controller.startTimeController.value.isNotEmpty &&
-              controller.selectedEndDate.value != null,
+          hintText: 'Select start time',
+          enabled: controller.selectedStartDate.value != null,
           onTapWhenDisabled: () {
-            Get.snackbar('Attention',controller.selectedStartDate.value == null
-                ? 'Please select a start date first'
-                : controller.startTimeController.value.isEmpty
-                ? 'Please select a start time first'
-                : 'Please select an end date first',colorText: colorScheme.onPrimary,backgroundColor: colorScheme.error);
+            Get.snackbar('Attention', 'Please select a start date first',
+                colorText: colorScheme.onPrimary,
+                backgroundColor: colorScheme.error);
           },
         ),
+        // CommonTimePicker(
+        //   onTimeChanged: (pickedTime) {
+        //     final now = DateTime.now();
+        //     final selectedDateTime = DateTime(now.year, now.month, now.day,
+        //         pickedTime.hour, pickedTime.minute);
+        //     final formattedTime = DateFormat('hh:mm aa').format(selectedDateTime);
+        //     controller.endTimeController.value = formattedTime;
+        //   },
+        //   hintText: 'Select end time',
+        //   enabled: controller.selectedStartDate.value != null &&
+        //       controller.startTimeController.value.isNotEmpty &&
+        //       controller.selectedEndDate.value != null,
+        //   onTapWhenDisabled: () {
+        //     Get.snackbar('Attention',controller.selectedStartDate.value == null
+        //         ? 'Please select a start date first'
+        //         : controller.startTimeController.value.isEmpty
+        //         ? 'Please select a start time first'
+        //         : 'Please select an end date first',colorText: colorScheme.onPrimary,backgroundColor: colorScheme.error);
+        //   },
+        // ),
         SizedBox(height: 10.h),
         _buildServicePicker(context, colorScheme), // Moved here with dependencies
       ],
@@ -332,7 +160,7 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
           ),
         ),
         GestureDetector(
-          onTap: (controller.selectedStartDate.value != null && controller.startTimeController.value.isNotEmpty)
+          onTap:  (controller.selectedStartDate.value != null && controller.startTimeController.value.isNotEmpty)
               ? () => _showServicePicker(context)
               : () {
             Get.snackbar(
@@ -856,9 +684,7 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
           SizedBox(height: 4.h),
           Expanded(
             child: Obx(() {
-              return controller.isServiceLoading.value
-                  ? const MakeShiftRequestShimmer()
-                  : SingleChildScrollView(
+              return SingleChildScrollView(
                 child: Container(
                   width: double.infinity,
                   margin: EdgeInsets.symmetric(

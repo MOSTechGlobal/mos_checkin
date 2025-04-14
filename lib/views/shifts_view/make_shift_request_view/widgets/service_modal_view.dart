@@ -99,7 +99,7 @@ class ServiceModalView extends StatelessWidget {
               SizedBox(height: 8.h),
               Expanded(
                 child: Obx(
-                  () => ListView.builder(
+                  () => serviceController.isServiceLoading.value? CircularProgressIndicator(): ListView.builder(
                     padding: EdgeInsets.zero,
                     shrinkWrap: true,
                     itemCount: serviceController.shiftServices.length,

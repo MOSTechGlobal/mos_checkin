@@ -167,6 +167,8 @@ class ShiftRequestsView extends GetView<ShiftRequestViewController> {
       ColorScheme colorScheme, BuildContext context) {
     String shiftStart = shiftRequest['ShiftStart'].toString();
     String shiftEnd = shiftRequest['ShiftEnd'].toString();
+    String shiftStartDate = shiftRequest['ShiftDate'].toString();
+    String shiftEndDate = shiftRequest['ShiftEndDate'].toString();
     String shiftStatus = shiftRequest['Status'] ?? 'NULL';
     String service = shiftRequest['ServiceDescription'] ?? '';
     String recurrence = shiftRequest['RecurrenceSentence'] ?? '';
@@ -189,8 +191,8 @@ class ShiftRequestsView extends GetView<ShiftRequestViewController> {
       onTap: () {
         Get.dialog(ShiftRequestDialog(
           service: service,
-          shiftStart: shiftStart,
-          shiftEnd: shiftEnd,
+          shiftStart: shiftStartDate,
+          shiftEnd: shiftEndDate,
           shiftStatus: shiftStatus,
           recurrence: recurrence,
           formattedStartTime: formattedStartTime,
