@@ -26,8 +26,9 @@ class CommonDatePicker extends FormField<DateTime> {
           context: context,
           isScrollControlled: true,
           builder: (BuildContext modalContext) {
-            DateTime tempDate =
-                state.value ?? initialDate ?? DateTime.now();
+            DateTime rawInitial = state.value ?? initialDate ?? DateTime.now();
+            DateTime minimumDate = initialDate ?? DateTime.now();
+            DateTime tempDate = rawInitial.isBefore(minimumDate) ? minimumDate : rawInitial;
 
             return StatefulBuilder(
               builder: (context, setState) {
@@ -52,9 +53,11 @@ class CommonDatePicker extends FormField<DateTime> {
                         child: CupertinoDatePicker(
                           mode: CupertinoDatePickerMode.date,
                           initialDateTime: tempDate,
+                          minimumDate: minimumDate,
                           onDateTimeChanged: (DateTime newDate) {
+                            final DateTime minDate = minimumDate;
                             setState(() {
-                              tempDate = newDate;
+                              tempDate = newDate.isBefore(minDate) ? minDate : newDate;
                             });
                           },
                         ),

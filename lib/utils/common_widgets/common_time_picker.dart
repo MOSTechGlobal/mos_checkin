@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -9,7 +8,7 @@ import 'common_button.dart';
 
 class CommonTimePicker extends FormField<DateTime> {
   CommonTimePicker({
-    superuitkey,
+    super.key,
     DateTime? initialTime,
     required Function(DateTime) onTimeChanged,
     Color? pickerColor,
@@ -18,7 +17,7 @@ class CommonTimePicker extends FormField<DateTime> {
     EdgeInsets? contentPadding,
     bool? readOnly,
     bool enabled = true,
-    VoidCallback? onTapWhenDisabled, // Added callback for disabled tap
+    VoidCallback? onTapWhenDisabled,
     super.validator,
   }) : super(
     initialValue: initialTime,
@@ -51,8 +50,7 @@ class CommonTimePicker extends FormField<DateTime> {
                           'Select Time',
                           style: TextStyle(
                             fontSize: 14.sp,
-                            color:
-                            Theme.of(context).colorScheme.onSurface,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -64,8 +62,7 @@ class CommonTimePicker extends FormField<DateTime> {
                             decoration: BoxDecoration(
                               color: Colors.transparent,
                               border: Border.all(
-                                color:
-                                Theme.of(context).colorScheme.error,
+                                color: Theme.of(context).colorScheme.error,
                                 width: 2,
                               ),
                               shape: BoxShape.circle,
@@ -85,6 +82,7 @@ class CommonTimePicker extends FormField<DateTime> {
                       child: CupertinoDatePicker(
                         mode: CupertinoDatePickerMode.time,
                         initialDateTime: tempTime,
+                        minimumDate: DateTime.now(), // Restrict past time
                         onDateTimeChanged: (DateTime newTime) {
                           tempTime = newTime;
                         },
@@ -130,7 +128,7 @@ class CommonTimePicker extends FormField<DateTime> {
           GestureDetector(
             onTap: enabled
                 ? () => showTimePickerModal(state.context)
-                : onTapWhenDisabled, // Use callback when disabled
+                : onTapWhenDisabled,
             child: Container(
               height: 40.h,
               decoration: BoxDecoration(
@@ -195,4 +193,17 @@ class CommonTimePicker extends FormField<DateTime> {
       );
     },
   );
+
+  @override
+  FormFieldValidator<DateTime>? get validator {
+    return (value) {
+      if (value == null) {
+        return 'Please select a time';
+      }
+      if (value.isBefore(DateTime.now())) {
+        return 'Selected time cannot be in the past';
+      }
+      return null;
+    };
+  }
 }

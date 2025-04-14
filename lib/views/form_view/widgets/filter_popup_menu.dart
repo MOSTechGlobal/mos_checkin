@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -23,7 +22,7 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200), // Short fade duration
+      duration: const Duration(milliseconds: 200),
     );
 
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -33,7 +32,7 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
       ),
     );
 
-    _animationController.forward(); // Start the fade-in animation
+    _animationController.forward();
   }
 
   @override
@@ -48,18 +47,17 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
       child: WillPopScope(
         onWillPop: () async {
-          await _animationController.reverse(); // Fade out before closing
+          await _animationController.reverse();
           return true;
         },
         child: Stack(
           children: [
             Positioned(
-              top: 110.h, // Adjusted for alignment with filter icon
+              top: 110.h,
               right: 10.w,
               child: FadeTransition(
                 opacity: _fadeAnimation,
@@ -76,7 +74,7 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
     return Material(
       color: Colors.transparent,
       child: Container(
-        width: screenWidth * 0.5, // Responsive width
+        width: screenWidth * 0.5,
         decoration: BoxDecoration(
           color: colorScheme.surface.withOpacity(0.95),
           borderRadius: BorderRadius.circular(12.r),
@@ -101,7 +99,7 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
             _buildMenuItem(
               context,
               'Pending',
-              () {
+                  () {
                 Get.back();
                 controller.selectedStatus.value = 'pending';
                 controller.filterForms();
@@ -111,7 +109,7 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
             _buildMenuItem(
               context,
               'Completed',
-              () {
+                  () {
                 Get.back();
                 controller.selectedStatus.value = 'completed';
                 controller.filterForms();
@@ -121,10 +119,10 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
             _buildMenuItem(
               context,
               'All',
-              () {
+                  () {
                 Get.back();
                 controller.selectedStatus.value = 'all';
-                controller.filteredForms.value = controller.allForms;
+                controller.filterForms();
               },
               colorScheme,
             ),
@@ -149,11 +147,27 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
   }
 
   Widget _buildMenuItem(
-    BuildContext context,
-    String title,
-    VoidCallback onTap,
-    ColorScheme colorScheme,
-  ) {
+      BuildContext context,
+      String title,
+      VoidCallback onTap,
+      ColorScheme colorScheme,
+      ) {
+    // Map title to status code for comparison
+    String statusCode;
+    switch (title.toLowerCase()) {
+      case 'pending':
+        statusCode = 'P';
+        break;
+      case 'completed':
+        statusCode = 'C';
+        break;
+      case 'all':
+        statusCode = 'all';
+        break;
+      default:
+        statusCode = '';
+    }
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8.r),
@@ -166,7 +180,7 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
             fontSize: 14.sp,
             fontWeight: FontWeight.w500,
             color: controller.selectedStatus.value.toLowerCase() ==
-                    title.toLowerCase()
+                statusCode.toLowerCase()
                 ? colorScheme.primary
                 : colorScheme.onSurface,
           ),

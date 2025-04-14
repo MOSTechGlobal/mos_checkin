@@ -11,7 +11,6 @@ class CommonTextField extends StatefulWidget {
   final EdgeInsets? contentPadding;
   final Function(String)? onChanged;
   final bool? readOnly;
-  final bool isObscure;
   final bool? enabled;
   final bool isPassword;
   final double paddingVertical;
@@ -27,9 +26,8 @@ class CommonTextField extends StatefulWidget {
     this.contentPadding,
     this.onChanged,
     this.readOnly,
-    this.isObscure = false,
-    this.isPassword = false,
     this.enabled = true,
+    this.isPassword = false,
     this.paddingVertical = 0.0,
   });
 
@@ -38,40 +36,45 @@ class CommonTextField extends StatefulWidget {
 }
 
 class _CommonTextFieldState extends State<CommonTextField> {
-  late bool _obscure;
-
-  @override
-  void initState() {
-    super.initState();
-    _obscure = widget.isObscure;
-  }
+  bool showPassword = false;
 
   @override
   Widget build(BuildContext context) {
+    final shouldObscure = widget.isPassword && !showPassword;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        widget.label == null || widget.label == ''
-            ? const SizedBox()
-            : Padding(
-                padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                child: Text(
-                  widget.label ?? '',
-                  style: TextStyle(
-                      fontSize: 14.sp,
-                      color: Theme.of(context).colorScheme.onSurface),
-                ),
+        if (widget.label != null && widget.label!.isNotEmpty)
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+            child: Text(
+              widget.label!,
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: Theme
+                    .of(context)
+                    .colorScheme
+                    .onSurface,
               ),
+            ),
+          ),
         Container(
           padding: EdgeInsets.symmetric(vertical: widget.paddingVertical.h),
           height: 40.h,
           decoration: BoxDecoration(
             color: widget.textFieldColor ??
-                Theme.of(context).colorScheme.onPrimary,
+                Theme
+                    .of(context)
+                    .colorScheme
+                    .onPrimary,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).colorScheme.shadow,
+                color: Theme
+                    .of(context)
+                    .colorScheme
+                    .shadow,
                 blurRadius: 2,
                 offset: const Offset(0, 1),
               )
@@ -85,7 +88,7 @@ class _CommonTextFieldState extends State<CommonTextField> {
               readOnly: widget.readOnly ?? false,
               textAlignVertical: TextAlignVertical.center,
               textAlign: TextAlign.left,
-              obscureText: _obscure,
+              obscureText: shouldObscure,
               decoration: InputDecoration(
                 contentPadding: widget.contentPadding ??
                     EdgeInsets.symmetric(horizontal: 12.w),
@@ -93,26 +96,34 @@ class _CommonTextFieldState extends State<CommonTextField> {
                 border: InputBorder.none,
                 hintText: widget.hintText,
                 hintStyle: TextStyle(
-                  color:
-                      Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  color: Theme
+                      .of(context)
+                      .colorScheme
+                      .onSurface
+                      .withOpacity(0.6),
                   fontSize: 12.sp,
                 ),
                 suffixIcon: widget.isPassword
                     ? IconButton(
-                        icon: Icon(
-                          _obscure ? Icons.visibility_off : Icons.visibility,
-                          color: Colors.grey,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscure = !_obscure;
-                          });
-                        },
-                      )
+                  icon: Icon(
+                    showPassword
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                    color: Colors.grey,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      showPassword = !showPassword;
+                    });
+                  },
+                )
                     : null,
               ),
               style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface,
+                color: Theme
+                    .of(context)
+                    .colorScheme
+                    .onSurface,
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w500,
               ),

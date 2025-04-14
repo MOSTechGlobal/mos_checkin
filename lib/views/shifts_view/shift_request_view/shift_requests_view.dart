@@ -94,9 +94,9 @@ class ShiftRequestsView extends GetView<ShiftRequestViewController> {
                               ? const Center(
                                   child: CommonErrorField(
                                     image: 'assets/images/no_result.png',
-                                    message: 'There is no shift today.',
+                                    message: 'You’re all clear — no shifts for now',
                                     customMessage:
-                                        'This is the Forms Screen where you can manage forms for the client profile. From here, you can add, review, and track all necessary forms required for the client.',
+                                        'This is the shifts request screen where you can see the shifts requested by you and their status',
                                   ),
                                 )
                               : ListView.builder(

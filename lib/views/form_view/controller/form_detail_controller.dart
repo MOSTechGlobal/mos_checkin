@@ -53,7 +53,7 @@ class FormDetailController extends GetxController {
       }
     } catch (e) {
       log('Error fetching form instance: $e');
-      errorMessage.value = 'Failed to fetch form details';
+      errorMessage.value = 'We couldn’t load your form details just now. Try again shortly';
     } finally {
       isLoading(false);
     }
@@ -83,7 +83,7 @@ class FormDetailController extends GetxController {
       }
     } catch (e) {
       log('Error fetching completed form data: $e');
-      errorMessage.value = 'Failed to fetch form data';
+      errorMessage.value = 'We couldn’t load your form details just now. Try again shortly';
     } finally {
       isLoading(false);
     }

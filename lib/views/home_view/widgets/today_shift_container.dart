@@ -118,7 +118,7 @@ class ApproveShiftContainer extends StatelessWidget {
     Color statusColor;
     switch (shiftStatus) {
       case 'Approved':
-        statusColor = Colors.green;
+        statusColor = Color(0xff570b90);
         break;
       default:
         statusColor = Colors.amber;
@@ -160,7 +160,7 @@ class ApproveShiftContainer extends StatelessWidget {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.2),
+                  color: statusColor.withOpacity(0.25),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Text(
@@ -168,7 +168,7 @@ class ApproveShiftContainer extends StatelessWidget {
                   style: TextStyle(
                     color: statusColor,
                     fontSize: 12.sp,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),

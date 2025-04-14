@@ -117,7 +117,6 @@ class LoginView extends GetView<LoginController> {
                                   CommonTextField(
                                     label: "Password",
                                     controller: controller.passwordController,
-                                    isObscure: true,
                                     hintText: "Password",
                                     isPassword : true,
                                     onChanged: (value) => controller

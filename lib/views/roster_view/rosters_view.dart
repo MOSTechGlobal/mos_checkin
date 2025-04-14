@@ -82,9 +82,9 @@ class RostersView extends GetView<RosterViewController> {
                                 child: CommonErrorField(
                                   image: 'assets/images/no_result.png',
                                   message:
-                                      'No Shifts found in the selected date range.',
+                                      "Couldn’t load standard shifts. Please refresh or check your connection.",
                                   customMessage:
-                                      'This is the Forms Screen where you can manage forms for the client profile. From here, you can add, review, and track all necessary forms required for the client.',
+                                      '',
                                 ),
                               ),
                             )
