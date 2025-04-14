@@ -90,7 +90,6 @@ class FormsView extends GetView<FormController> {
                               },
                             ),
                           ),
-                          SizedBox(width: 10.w),
                           GestureDetector(
                             onTap: () => _showCustomMenu(context),
                             child: Image.asset(
@@ -147,7 +146,6 @@ class FormsView extends GetView<FormController> {
                                   },
                                 ),
                               ),
-                              SizedBox(width: 10.w),
                               GestureDetector(
                                 onTap: () => _showCustomMenu(context),
                                 child: Image.asset(
