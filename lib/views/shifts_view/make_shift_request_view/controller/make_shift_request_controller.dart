@@ -131,7 +131,6 @@ class MakeShiftRequestController extends GetxController {
       final effectiveShiftType = shiftType ?? 'standard';
       log('Fetching shift services for ClientID: $clientID, ShiftType: $effectiveShiftType');
       final shiftServicesData = await Api.get('getServiceAsPerAgreement/$clientID/$effectiveShiftType');
-      log('Shift Services Response: $shiftServicesData');
 
       if (shiftServicesData['data'] != null && shiftServicesData['data'].isNotEmpty) {
         shiftServices.value = (shiftServicesData['data'] as List<dynamic>)
@@ -322,19 +321,21 @@ class MakeShiftRequestController extends GetxController {
   }
 
   Future<void> fetchClientCaseManagerData() async {
-    // ... (unchanged)
-    var clientID = await Prefs.getClientID();
     try {
+      var clientID = await Prefs.getClientID();
       final resGeneralData =
       await Api.get('getClientCaseManagerDataById/$clientID');
 
-      clientCaseManagers.value =
-      resGeneralData['data'].isNotEmpty ? resGeneralData['data'][0] : {};
-
-      log(clientID.toString());
-      log('Client Case Manager Data: $clientCaseManagers');
+      // Check if data exists and is a map
+      if (resGeneralData['success'] == true && resGeneralData['data'] is Map) {
+        clientCaseManagers.value = resGeneralData['data'];
+      } else {
+        clientCaseManagers.value = {};
+        log('No valid case manager data found or API failed');
+      }
     } catch (e) {
       log('Error fetching client case manager data: $e');
+      clientCaseManagers.value = {};
     }
   }
 
