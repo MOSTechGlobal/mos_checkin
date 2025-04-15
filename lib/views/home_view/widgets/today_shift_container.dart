@@ -91,8 +91,8 @@ class ApproveShiftContainer extends StatelessWidget {
   }
 
   Widget _buildShiftItem(Map<String, dynamic> shiftData) {
-    final service =(shiftData['ServiceDescription'] as String?)?.trim() ?? 'Unknown Service';
-    final shiftStatus = (shiftData['Status'] as String?)?.trim() == 'A' ? 'Approved' : 'Unknown';
+    final service = (shiftData['ServiceDescription'] as String?)?.trim() ?? 'Unknown Service';
+    final shiftStatus = (shiftData['Status'] as String?)?.trim() == 'A' ? 'Approved' : 'Pending';
     final clientInfo = 'Client ID: ${shiftData['ClientID'] ?? 'Unknown'}'; // Using ClientID as placeholder
 
     // Format shift time
@@ -114,21 +114,24 @@ class ApproveShiftContainer extends StatelessWidget {
       shiftTime = 'Time not available';
     }
 
-    // Choose status color
+    // Improved color scheme for status
     Color statusColor;
+    Color statusTextColor;
     switch (shiftStatus) {
       case 'Approved':
-        statusColor = Color(0xff570b90);
+        statusColor = const Color(0xFF4CAF50); // Bright green
+        statusTextColor = Colors.white;
         break;
       default:
-        statusColor = Colors.amber;
+        statusColor = const Color(0xFFFFC107); // Amber with better contrast
+        statusTextColor = Colors.black87;
     }
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 4.h),
       padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 10.w),
       decoration: BoxDecoration(
-        color: colorScheme.primary.withOpacity(0.35),
+        color: colorScheme.primary.withOpacity(0.3),
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
@@ -160,13 +163,13 @@ class ApproveShiftContainer extends StatelessWidget {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.25),
+                  color: statusColor,
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Text(
                   shiftStatus,
                   style: TextStyle(
-                    color: statusColor,
+                    color: statusTextColor,
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
                   ),
