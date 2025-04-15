@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:mos_checkin/views/shifts_view/make_shift_request_view/widgets/service_modal_view.dart';
 
-import '../../../shimmers/shimmer_make_shift_request.dart';
 import '../../../utils/common_widgets/common_app_bar.dart';
 import '../../../utils/common_widgets/common_button.dart';
 import '../../../utils/common_widgets/common_date_picker.dart';
@@ -55,7 +54,7 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
         ),
         SizedBox(height: 10.h),
         CommonTimePicker(
-          associatedDate: controller.selectedStartDate.value, // <-- pass the date
+          associatedDate: controller.selectedStartDate.value,
           onTimeChanged: (pickedTime) {
             final now = DateTime.now();
             final selectedDateTime = DateTime(now.year, now.month, now.day,
@@ -71,42 +70,47 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
                 backgroundColor: colorScheme.error);
           },
         ),
-
-        // CommonTimePicker(
-        //   onTimeChanged: (pickedTime) {
-        //     final now = DateTime.now();
-        //     final selectedDateTime = DateTime(now.year, now.month, now.day,
-        //         pickedTime.hour, pickedTime.minute);
-        //     final formattedTime = DateFormat('hh:mm aa').format(selectedDateTime);
-        //     controller.startTimeController.value = formattedTime;
-        //   },
-        //   hintText: 'Select start time',
-        //   enabled: controller.selectedStartDate.value != null,
-        //   onTapWhenDisabled: () {
-        //     Get.snackbar('Attention', 'Please select a start date first',colorText: colorScheme.onPrimary,backgroundColor: colorScheme.error);
-        //   },
-        // ),
         SizedBox(height: 10.h),
         CommonDatePicker(
-          initialDate: controller.selectedStartDate.value,
+          initialDate: controller.selectedEndDate.value,
           onDateChanged: (pickedDate) {
-            controller.selectedEndDate.value = pickedDate;
-            controller.endDateController.value =
-                DateFormat('dd-MM-yyyy').format(pickedDate);
+            if (pickedDate.isAfter(controller.selectedStartDate.value!)) {
+              controller.selectedEndDate.value = pickedDate;
+              controller.endDateController.value =
+                  DateFormat('dd-MM-yyyy').format(pickedDate);
+            } else {
+              Get.snackbar(
+                'Invalid Date',
+                'End date must be after start date',
+                colorText: colorScheme.onPrimary,
+                backgroundColor: colorScheme.error,
+              );
+            }
           },
           hintText: 'Select end date',
           label: 'Choose end date and time',
           enabled: controller.selectedStartDate.value != null &&
               controller.startTimeController.value.isNotEmpty,
           onTapWhenDisabled: () {
-            Get.snackbar('Attention', controller.selectedStartDate.value == null
-                ? 'Please select a start date first'
-                : 'Please select a start time first',colorText: colorScheme.onPrimary,backgroundColor: colorScheme.error);
+            print(
+                'Debug: selectedStartDate: ${controller.selectedStartDate.value}, '
+                    'startTimeController: "${controller.startTimeController.value}"');
+            Get.snackbar(
+              'Attention',
+              controller.selectedStartDate.value == null &&
+                  controller.startTimeController.value.isEmpty
+                  ? 'Please select both start date and start time first'
+                  : controller.selectedStartDate.value == null
+                  ? 'Please select a start date first'
+                  : 'Please select a start time first',
+              colorText: colorScheme.onPrimary,
+              backgroundColor: colorScheme.error,
+            );
           },
         ),
         SizedBox(height: 10.h),
         CommonTimePicker(
-          associatedDate: controller.selectedEndDate.value, // <-- pass the date
+          associatedDate: controller.selectedEndDate.value,
           onTimeChanged: (pickedTime) {
             final now = DateTime.now();
             final selectedDateTime = DateTime(now.year, now.month, now.day,
@@ -114,36 +118,25 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
             controller.endTimeController.value =
                 DateFormat('hh:mm aa').format(selectedDateTime);
           },
-          hintText: 'Select start time',
-          enabled: controller.selectedStartDate.value != null,
+          hintText: 'Select end time',
+          enabled: controller.selectedStartDate.value != null &&
+              controller.startTimeController.value.isNotEmpty &&
+              controller.selectedEndDate.value != null,
           onTapWhenDisabled: () {
-            Get.snackbar('Attention', 'Please select a start date first',
-                colorText: colorScheme.onPrimary,
-                backgroundColor: colorScheme.error);
+            Get.snackbar(
+              'Attention',
+              controller.selectedStartDate.value == null
+                  ? 'Please select a start date first'
+                  : controller.startTimeController.value.isEmpty
+                  ? 'Please select a start time first'
+                  : 'Please select an end date first',
+              colorText: colorScheme.onPrimary,
+              backgroundColor: colorScheme.error,
+            );
           },
         ),
-        // CommonTimePicker(
-        //   onTimeChanged: (pickedTime) {
-        //     final now = DateTime.now();
-        //     final selectedDateTime = DateTime(now.year, now.month, now.day,
-        //         pickedTime.hour, pickedTime.minute);
-        //     final formattedTime = DateFormat('hh:mm aa').format(selectedDateTime);
-        //     controller.endTimeController.value = formattedTime;
-        //   },
-        //   hintText: 'Select end time',
-        //   enabled: controller.selectedStartDate.value != null &&
-        //       controller.startTimeController.value.isNotEmpty &&
-        //       controller.selectedEndDate.value != null,
-        //   onTapWhenDisabled: () {
-        //     Get.snackbar('Attention',controller.selectedStartDate.value == null
-        //         ? 'Please select a start date first'
-        //         : controller.startTimeController.value.isEmpty
-        //         ? 'Please select a start time first'
-        //         : 'Please select an end date first',colorText: colorScheme.onPrimary,backgroundColor: colorScheme.error);
-        //   },
-        // ),
         SizedBox(height: 10.h),
-        _buildServicePicker(context, colorScheme), // Moved here with dependencies
+        _buildServicePicker(context, colorScheme),
       ],
     );
   }
@@ -160,7 +153,10 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
           ),
         ),
         GestureDetector(
-          onTap:  (controller.selectedStartDate.value != null && controller.startTimeController.value.isNotEmpty)
+          onTap: (controller.selectedStartDate.value != null &&
+              controller.startTimeController.value.isNotEmpty &&
+              controller.selectedEndDate.value != null &&
+              controller.endTimeController.value.isNotEmpty)
               ? () => _showServicePicker(context)
               : () {
             Get.snackbar(
@@ -195,8 +191,10 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
                 Expanded(
                   child: Text(
                     controller.selectedService.value.isNotEmpty
-                        ? controller.shiftServices.firstWhere( // Use shiftServices instead of services
-                          (service) => service['Service_Code'].toString() == controller.selectedService.value,
+                        ? controller.shiftServices.firstWhere(
+                          (service) =>
+                      service['Service_Code'].toString() ==
+                          controller.selectedService.value,
                       orElse: () => {'Description': 'Service not found'},
                     )['Description']
                         : 'Select Service',
@@ -204,7 +202,9 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
                       color: controller.selectedService.value.isEmpty
                           ? colorScheme.onSurface.withOpacity(0.6)
                           : colorScheme.onSurface,
-                      fontSize: controller.selectedService.value.isNotEmpty ? 14.sp : 12.sp,
+                      fontSize: controller.selectedService.value.isNotEmpty
+                          ? 14.sp
+                          : 12.sp,
                     ),
                     maxLines: null,
                   ),
@@ -231,11 +231,12 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
   }
 
   void _showServicePicker(BuildContext context) async {
-    final controller = Get.find<MakeShiftRequestController>(); // Assuming controller is accessed via GetX
+    final controller = Get.find<MakeShiftRequestController>();
     final colorScheme = Theme.of(context).colorScheme;
 
-    // Ensure start date and time are available
-    if (controller.selectedStartDate.value == null || controller.startTimeController.value.isEmpty) {
+    // Validate start date and time
+    if (controller.selectedStartDate.value == null ||
+        controller.startTimeController.value.isEmpty) {
       Get.snackbar(
         'Attention',
         controller.selectedStartDate.value == null
@@ -247,55 +248,72 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
       return;
     }
 
-    // Parse start date and time to calculate shift type
-    final startDate = controller.selectedStartDate.value!;
-    final startTimeStr = controller.startTimeController.value;
-    final timeFormat = DateFormat('hh:mm aa');
-    final startTime = timeFormat.parse(startTimeStr);
-    final startDateTime = DateTime(
-      startDate.year,
-      startDate.month,
-      startDate.day,
-      startTime.hour,
-      startTime.minute,
-    );
-
-    // Calculate shift type
-    await controller.calculateShiftType(startDateTime, startDateTime.add(Duration(hours: 1))); // Assuming 1-hour shift for end time
-    final shiftType = controller.shiftTypes.isNotEmpty ? controller.shiftTypes.first : 'standard'; // Fallback to 'standard'
-    controller.shiftType.value = shiftType; // Update observable shiftType
-    log('Calculated Shift Type: $shiftType');
-
-    // Fetch shift services
-    final clientId = await Prefs.getClientID(); // Ensure you have the clientId
-    await controller.fetchShiftServices(clientId, shiftType);
-
-    // Show the service picker dialog with fetched shiftServices
+    // Open dialog immediately
     Get.dialog(
-      ServiceModalView(
-        allServices: controller.shiftServices.toSet(), // Use shiftServices instead of services
+      Obx(() => ServiceModalView(
+        allServices: controller.shiftServices.toSet(),
         currentServices: controller.selectedService.value.isNotEmpty
             ? {
           controller.shiftServices.firstWhere(
-                (service) => service['Service_Code'] == controller.selectedService.value,
-            orElse: () => {'Service_Code': '', 'Description': 'Service not found'},
+                (service) =>
+            service['Service_Code'] ==
+                controller.selectedService.value,
+            orElse: () =>
+            {'Service_Code': '', 'Description': 'Service not found'},
           ),
         }
             : {},
         agreementCode: clientId.toString(),
-        startDate: controller.selectedStartDate.value!, // Pass start date
-        startTime: controller.startTimeController.value, // Pass start time
+        startDate: controller.selectedStartDate.value!,
+        startTime: controller.startTimeController.value,
         onAddServices: (selectedServices) {
           if (selectedServices.isNotEmpty) {
-            controller.selectedService.value = selectedServices.first['Service_Code'];
+            controller.selectedService.value =
+            selectedServices.first['Service_Code'];
           }
         },
-      ),
+      )),
+      barrierDismissible: false, // Prevent closing during loading
     );
+
+    // Fetch services asynchronously
+    try {
+      // Parse start date and time
+      final startDate = controller.selectedStartDate.value!;
+      final startTimeStr = controller.startTimeController.value;
+      final timeFormat = DateFormat('hh:mm aa');
+      final startTime = timeFormat.parse(startTimeStr);
+      final startDateTime = DateTime(
+        startDate.year,
+        startDate.month,
+        startDate.day,
+        startTime.hour,
+        startTime.minute,
+      );
+
+      // Calculate shift type
+      await controller.calculateShiftType(
+          startDateTime, startDateTime.add(Duration(hours: 1)));
+      final shiftType = controller.shiftTypes.isNotEmpty
+          ? controller.shiftTypes.first
+          : 'standard';
+      controller.shiftType.value = shiftType;
+      log('Calculated Shift Type: $shiftType');
+
+      // Fetch shift services
+      await controller.fetchShiftServices(clientId, shiftType);
+    } catch (e) {
+      log('Error in _showServicePicker: $e');
+      Get.back(); // Close dialog on error
+      Get.snackbar(
+        'Error',
+        'Failed to load services',
+        colorText: colorScheme.onPrimary,
+        backgroundColor: colorScheme.error,
+      );
+    }
   }
 
-
-  // Widget for monthly recurrence options with consistent UI
   Widget _buildMonthlyRecurrenceOptions(
       BuildContext context, ColorScheme colorScheme) {
     return Column(
@@ -462,7 +480,6 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
     );
   }
 
-  // Widget for recurring shift options
   Widget _buildRecurringShiftOptions(
       BuildContext context, ColorScheme colorScheme) {
     return Obx(() => Column(
@@ -482,7 +499,6 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
           padding: EdgeInsets.only(left: 10.w, top: 5.h, bottom: 5.h),
           child: GestureDetector(
             onTap: () {
-              // Toggle the value when the entire row is tapped
               controller.isRecurringShift.value =
               !controller.isRecurringShift.value;
             },
@@ -501,15 +517,13 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
                 ),
                 Transform.scale(
                   scale: controller.isRecurringShift.value ? 1 : 0.8,
-                  // Reduce the checkbox size
                   child: Checkbox(
                     value: controller.isRecurringShift.value,
                     onChanged: (value) {
                       controller.isRecurringShift.value = value ?? false;
                     },
                     activeColor: colorScheme.primary,
-                    materialTapTargetSize: MaterialTapTargetSize
-                        .shrinkWrap, // Reduces tap area padding
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 )
               ],
@@ -687,8 +701,8 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
               return SingleChildScrollView(
                 child: Container(
                   width: double.infinity,
-                  margin: EdgeInsets.symmetric(
-                      horizontal: 10.w, vertical: 16.h),
+                  margin:
+                  EdgeInsets.symmetric(horizontal: 10.w, vertical: 16.h),
                   decoration: BoxDecoration(
                     color: colorScheme.onPrimary,
                     borderRadius: BorderRadius.circular(12.r),
@@ -701,23 +715,23 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
                     ],
                   ),
                   child: Padding(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 12.w, vertical: 8.h),
+                    padding:
+                    EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildBasicDetails(context,colorScheme),
+                        _buildBasicDetails(context, colorScheme),
                         SizedBox(height: 10.h),
-                        // _buildServicePicker(context, colorScheme),
-                        // SizedBox(height: 10.h),
                         _buildRecurringShiftOptions(context, colorScheme),
                         SizedBox(height: 12.h),
                         CommonButton(
                           text: 'Save',
                           onPressed: controller.isSubmitting.value
-                              ? null // Disable button while submitting
-                              : controller.selectedService.value.isEmpty? null: () {
+                              ? null
+                              : controller.selectedService.value.isEmpty
+                              ? null
+                              : () {
                             controller.extractData(
                                 context, colorScheme);
                           },

@@ -81,8 +81,8 @@ class MakeShiftRequestController extends GetxController {
     final now = DateTime.now();
     startDateController.value = DateFormat('dd-MM-yyyy').format(now);
     endDateController.value = DateFormat('dd-MM-yyyy').format(now);
-    startTimeController.value = DateFormat('hh:mm aa').format(now);
-    endTimeController.value = DateFormat('hh:mm aa').format(now.add(const Duration(hours: 1)));
+    // startTimeController.value = DateFormat('hh:mm aa').format(now);
+    // endTimeController.value = DateFormat('hh:mm aa').format(now.add(const Duration(hours: 1)));
     repeatEveryController.text = '1';
     mDayController.text = '1';
     fetchClientCaseManagerData();
@@ -106,7 +106,6 @@ class MakeShiftRequestController extends GetxController {
   }
 
   String formSentence() {
-    // ... (unchanged)
     if (!isRecurringShift.value) {
       return 'This is a one-time shift on ${startDateController.value} from ${startTimeController.value} to ${endDateController.value} ${endTimeController.value}.';
     } else if (selectedRecurringShiftType.value == 'days') {

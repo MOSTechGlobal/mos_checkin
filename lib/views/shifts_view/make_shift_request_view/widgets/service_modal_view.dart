@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -10,8 +11,8 @@ class ServiceModalView extends StatelessWidget {
   final Set<Map<String, dynamic>> allServices;
   final Set<Map<String, dynamic>> currentServices;
   final String agreementCode;
-  final DateTime startDate; // Added startDate parameter
-  final String startTime; // Added startTime parameter
+  final DateTime startDate;
+  final String startTime;
   final Function(Set<Map<String, dynamic>>) onAddServices;
 
   const ServiceModalView({
@@ -19,8 +20,8 @@ class ServiceModalView extends StatelessWidget {
     required this.allServices,
     required this.currentServices,
     required this.agreementCode,
-    required this.startDate, // Nullable start date
-    required this.startTime, // Nullable start time
+    required this.startDate,
+    required this.startTime,
     required this.onAddServices,
   });
 
@@ -56,7 +57,9 @@ class ServiceModalView extends StatelessWidget {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () => Get.back(),
+                    onTap: serviceController.isServiceLoading.value
+                        ? null // Disable close button during loading
+                        : () => Get.back(),
                     child: Container(
                       width: 25.w,
                       height: 25.h,
@@ -78,10 +81,11 @@ class ServiceModalView extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 16.h),
+              // Uncomment if search bar is needed
               // CommonSearchBar(
               //   colorScheme: colorScheme,
               //   searchController: serviceController.searchController,
-              //   onChanged: (value) { // Optional: explicit filtering
+              //   onChanged: (value) {
               //     final query = value.toLowerCase();
               //     if (query.isEmpty) {
               //       serviceController.filteredServices.value = serviceController.shiftServices.value;
@@ -99,15 +103,47 @@ class ServiceModalView extends StatelessWidget {
               SizedBox(height: 8.h),
               Expanded(
                 child: Obx(
-                  () => serviceController.isServiceLoading.value? CircularProgressIndicator(): ListView.builder(
+                      () => serviceController.isServiceLoading.value
+                      ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              colorScheme.primary),
+                        ),
+                        SizedBox(height: 10.h),
+                        Text(
+                          'Loading services...',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                      : serviceController.shiftServices.isEmpty
+                      ? Center(
+                    child: Text(
+                      'No services available',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                  )
+                      : ListView.builder(
                     padding: EdgeInsets.zero,
                     shrinkWrap: true,
                     itemCount: serviceController.shiftServices.length,
                     itemBuilder: (context, index) {
-                      final service =
-                          serviceController.shiftServices.elementAt(index);
+                      final service = serviceController
+                          .shiftServices
+                          .elementAt(index);
                       final isSelected =
-                          serviceController.selectedService.value == service;
+                          serviceController.selectedService.value ==
+                              service['Service_Code'];
                       final backgroundColor = index % 2 == 0
                           ? colorScheme.primaryContainer
                           : colorScheme.secondaryContainer;
@@ -128,21 +164,24 @@ class ServiceModalView extends StatelessWidget {
                             color: backgroundColor,
                             border: isSelected
                                 ? Border.all(
-                                    color: colorScheme.primary,
-                                    width: 2,
-                                  )
+                              color: colorScheme.primary,
+                              width: 2,
+                            )
                                 : null,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
+                            crossAxisAlignment:
+                            CrossAxisAlignment.center,
                             children: [
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment:
+                                  CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      service['Service_Code'] ?? 'No Code',
+                                      service['Service_Code'] ??
+                                          'No Code',
                                       style: TextStyle(
                                         color: colorScheme.onSurface,
                                         fontSize: 12.sp,
@@ -174,16 +213,16 @@ class ServiceModalView extends StatelessWidget {
                                     color: isSelected
                                         ? colorScheme.primary
                                         : colorScheme.onSurface
-                                            .withOpacity(0.5),
+                                        .withOpacity(0.5),
                                     width: 2,
                                   ),
                                 ),
                                 child: isSelected
                                     ? Icon(
-                                        Icons.check,
-                                        color: colorScheme.onSurface,
-                                        size: 16,
-                                      )
+                                  Icons.check,
+                                  color: colorScheme.onSurface,
+                                  size: 16,
+                                )
                                     : null,
                               ),
                             ],
