@@ -16,19 +16,27 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 250),
     );
 
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _animationController,
         curve: Curves.easeIn,
+      ),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.95, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeOutBack,
       ),
     );
 
@@ -48,23 +56,33 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+      filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
       child: WillPopScope(
         onWillPop: () async {
           await _animationController.reverse();
           return true;
         },
-        child: Stack(
-          children: [
-            Positioned(
-              top: 110.h,
-              right: 10.w,
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: _buildMenu(context, colorScheme),
+        child: GestureDetector(
+          onTap: () async {
+            await _animationController.reverse();
+            Get.back();
+          },
+          behavior: HitTestBehavior.opaque,
+          child: Stack(
+            children: [
+              Positioned(
+                top: 110.h,
+                right: 16.w,
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: ScaleTransition(
+                    scale: _scaleAnimation,
+                    child: _buildMenu(context, colorScheme),
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -74,28 +92,44 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
     return Material(
       color: Colors.transparent,
       child: Container(
-        width: screenWidth * 0.5,
+        width: screenWidth * 0.55,
         decoration: BoxDecoration(
-          color: colorScheme.surface.withOpacity(0.95),
-          borderRadius: BorderRadius.circular(12.r),
+          color: colorScheme.surface.withOpacity(0.98),
+          borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
-              color: colorScheme.shadow.withOpacity(0.2),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              color: colorScheme.shadow.withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+              spreadRadius: 2,
             ),
           ],
           border: Border.all(
-            color: colorScheme.outline.withOpacity(0.1),
+            color: colorScheme.outline.withOpacity(0.08),
             width: 1,
           ),
         ),
-        padding: EdgeInsets.symmetric(vertical: 8.h),
+        padding: EdgeInsets.symmetric(vertical: 12.h),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(colorScheme),
+            SizedBox(height: 8.h),
+            _buildDivider(colorScheme),
+            SizedBox(height: 8.h),
+            _buildMenuItem(
+              context,
+              'All',
+                  () {
+                Get.back();
+                controller.selectedStatus.value = 'all';
+                controller.filterForms();
+              },
+              colorScheme,
+              'all',
+              Icons.filter_list_rounded,
+            ),
             _buildMenuItem(
               context,
               'Pending',
@@ -105,6 +139,8 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
                 controller.filterForms();
               },
               colorScheme,
+              'P',
+              Icons.pending_actions_rounded,
             ),
             _buildMenuItem(
               context,
@@ -115,17 +151,10 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
                 controller.filterForms();
               },
               colorScheme,
+              'C',
+              Icons.check_circle_outline_rounded,
             ),
-            _buildMenuItem(
-              context,
-              'All',
-                  () {
-                Get.back();
-                controller.selectedStatus.value = 'all';
-                controller.filterForms();
-              },
-              colorScheme,
-            ),
+
           ],
         ),
       ),
@@ -134,13 +163,49 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
 
   Widget _buildHeader(ColorScheme colorScheme) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      child: Text(
-        'Filter By Status',
-        style: TextStyle(
-          fontSize: 14.sp,
-          fontWeight: FontWeight.w600,
-          color: colorScheme.onSurface.withOpacity(0.8),
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Filter By Status',
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              color: colorScheme.onSurface,
+            ),
+          ),
+          InkWell(
+            onTap: () async {
+              await _animationController.reverse();
+              Get.back();
+            },
+            borderRadius: BorderRadius.circular(20.r),
+            child: Padding(
+              padding: EdgeInsets.all(4.r),
+              child: Icon(
+                Icons.close_rounded,
+                size: 20.sp,
+                color: colorScheme.onSurface.withOpacity(0.6),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDivider(ColorScheme colorScheme) {
+    return Container(
+      height: 1.h,
+      margin: EdgeInsets.symmetric(horizontal: 12.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            colorScheme.primary.withOpacity(0.1),
+            colorScheme.primary.withOpacity(0.3),
+            colorScheme.primary.withOpacity(0.1),
+          ],
         ),
       ),
     );
@@ -151,38 +216,62 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
       String title,
       VoidCallback onTap,
       ColorScheme colorScheme,
+      String statusCode,
+      IconData icon,
       ) {
-    // Map title to status code for comparison
-    String statusCode;
-    switch (title.toLowerCase()) {
-      case 'pending':
-        statusCode = 'P';
-        break;
-      case 'completed':
-        statusCode = 'C';
-        break;
-      case 'all':
-        statusCode = 'all';
-        break;
-      default:
-        statusCode = '';
-    }
+    final isSelected = controller.selectedStatus.value.toLowerCase() ==
+        statusCode.toLowerCase();
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8.r),
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-        child: Text(
-          title,
-          style: TextStyle(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w500,
-            color: controller.selectedStatus.value.toLowerCase() ==
-                statusCode.toLowerCase()
-                ? colorScheme.primary
-                : colorScheme.onSurface,
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12.r),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12.r),
+          splashColor: colorScheme.primary.withOpacity(0.1),
+          highlightColor: colorScheme.primary.withOpacity(0.05),
+          child: Ink(
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? colorScheme.primary.withOpacity(0.1)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              child: Row(
+                children: [
+                  Icon(
+                    icon,
+                    size: 20.sp,
+                    color: isSelected
+                        ? colorScheme.primary
+                        : colorScheme.onSurface.withOpacity(0.6),
+                  ),
+                  SizedBox(width: 12.w),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      color: isSelected
+                          ? colorScheme.primary
+                          : colorScheme.onSurface,
+                    ),
+                  ),
+                  if (isSelected) ...[
+                    const Spacer(),
+                    Icon(
+                      Icons.check_rounded,
+                      size: 20.sp,
+                      color: colorScheme.primary,
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ),
         ),
       ),

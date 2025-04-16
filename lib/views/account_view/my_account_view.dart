@@ -50,7 +50,7 @@ class MyAccountView extends GetView<AccountController> {
                             )),
                         ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: colorScheme.inverseSurface,
+                              backgroundColor: Colors.green,
                               fixedSize: const Size(100, 30),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),

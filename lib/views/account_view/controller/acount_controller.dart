@@ -44,7 +44,7 @@ class AccountController extends GetxController {
       clientData.assignAll(res['data'][0]);
       emailController.text = clientData['Email'] ?? '';
       phoneController.text = clientData['Phone'] ?? '';
-      log('Worker data: $clientData');
+      log('Client data: $clientData');
     } catch (e) {
       log('Error fetching worker data: $e');
     }finally{
