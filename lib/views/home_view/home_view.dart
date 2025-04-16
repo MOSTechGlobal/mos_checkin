@@ -9,7 +9,7 @@ import 'package:mos_checkin/views/home_view/widgets/weather_widget.dart';
 import '../../utils/common_widgets/common_button.dart';
 import '../../utils/common_widgets/common_dialog.dart';
 import 'controller/home_controller.dart';
-import 'controller/weather_controller.dart'; // Assuming WeatherController exists
+import 'controller/weather_controller.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
@@ -21,10 +21,9 @@ class HomeView extends GetView<HomeController> {
   }
 
   Future<void> _onRefresh() async {
-    // Reload both HomeController and WeatherController data
-    await controller.fetchClientShifts();
+    controller.fetchClientShifts();
     final weatherController = Get.find<WeatherController>();
-    await weatherController.fetchWeatherData(); // Adjust method name as needed
+    weatherController.fetchWeatherData();
   }
 
   @override
@@ -61,77 +60,74 @@ class HomeView extends GetView<HomeController> {
                         controller.isLoading.value
                             ? const Center(child: CircularProgressIndicator())
                             : Column(
-                          children: [
-                            controller.showWeather.value
-                                ? const WeatherWidget()
-                                : const SizedBox.shrink(),
-                            SizedBox(height: 8.h),
-                            Container(
-                              margin:
-                              EdgeInsets.symmetric(vertical: 8.h),
-                              width: 330.w,
-                              padding: EdgeInsets.only(top: 8.h),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFFF5F6FF),
-                                    Color(0xFFEFF1FF)
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius:
-                                BorderRadius.circular(15.r),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: colorScheme.shadow
-                                        .withOpacity(0.15),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
                                 children: [
-                                  Padding(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: 10.w),
-                                    child: Row(
-                                      children: [
-                                        _buildRoundIcon(
-                                          colorScheme,
-                                          'assets/icons/calendar.png',
-                                          size: 14.sp,
-                                          padding: 8.sp,
-                                          backgroundColor: colorScheme
-                                              .primary
+                                  controller.showWeather.value
+                                      ? const WeatherWidget()
+                                      : const SizedBox.shrink(),
+                                  SizedBox(height: 8.h),
+                                  Container(
+                                    margin: EdgeInsets.symmetric(vertical: 8.h),
+                                    width: 330.w,
+                                    padding: EdgeInsets.only(top: 8.h),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          Color(0xFFF5F6FF),
+                                          Color(0xFFEFF1FF)
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      borderRadius: BorderRadius.circular(15.r),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: colorScheme.shadow
                                               .withOpacity(0.15),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
                                         ),
-                                        SizedBox(width: 10.w),
-                                        Text(
-                                          "Approved Shifts",
-                                          style: TextStyle(
-                                            color:
-                                            colorScheme.onSurface,
-                                            fontSize: 15.sp,
-                                            fontWeight: FontWeight.w600,
-                                            letterSpacing: 0.3,
+                                      ],
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 10.w),
+                                          child: Row(
+                                            children: [
+                                              _buildRoundIcon(
+                                                colorScheme,
+                                                'assets/icons/calendar.png',
+                                                size: 14.sp,
+                                                padding: 8.sp,
+                                                backgroundColor: colorScheme
+                                                    .primary
+                                                    .withOpacity(0.15),
+                                              ),
+                                              SizedBox(width: 10.w),
+                                              Text(
+                                                "Approved Shifts",
+                                                style: TextStyle(
+                                                  color: colorScheme.onSurface,
+                                                  fontSize: 15.sp,
+                                                  fontWeight: FontWeight.w600,
+                                                  letterSpacing: 0.3,
+                                                ),
+                                              ),
+                                              const Spacer(),
+                                            ],
                                           ),
                                         ),
-                                        const Spacer(),
+                                        SizedBox(height: 6.h),
+                                        ApproveShiftContainer(
+                                          colorScheme: colorScheme,
+                                          controller: controller,
+                                        ),
                                       ],
                                     ),
                                   ),
-                                  SizedBox(height: 6.h),
-                                  ApproveShiftContainer(
-                                    colorScheme: colorScheme,
-                                    controller: controller,
-                                  ),
                                 ],
                               ),
-                            ),
-                          ],
-                        ),
                       ],
                     ),
                   ),
@@ -147,12 +143,12 @@ class HomeView extends GetView<HomeController> {
 
   /// Builds the circular icon widget used in the header row.
   Widget _buildRoundIcon(
-      ColorScheme colorScheme,
-      String iconPath, {
-        double size = 18,
-        double padding = 7,
-        Color? backgroundColor,
-      }) {
+    ColorScheme colorScheme,
+    String iconPath, {
+    double size = 18,
+    double padding = 7,
+    Color? backgroundColor,
+  }) {
     return Container(
       padding: EdgeInsets.all(padding),
       decoration: BoxDecoration(
