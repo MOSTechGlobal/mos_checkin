@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -10,10 +12,14 @@ class PrivacyPolicyView extends StatelessWidget {
 
   void _openPrivacyPolicyLink() async {
     final url = Uri.parse('https://mostech.solutions/privacy-policy/');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else {
-      throw 'Could not launch $url';
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        log('Could not launch the privacy policy page.');
+      }
+    } catch (e) {
+      log('Error launching URL: $e');
     }
   }
 
