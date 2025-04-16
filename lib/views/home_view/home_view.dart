@@ -9,7 +9,6 @@ import 'package:mos_checkin/views/home_view/widgets/weather_widget.dart';
 import '../../utils/common_widgets/common_button.dart';
 import '../../utils/common_widgets/common_dialog.dart';
 import 'controller/home_controller.dart';
-import 'controller/weather_controller.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
@@ -35,89 +34,92 @@ class HomeView extends GetView<HomeController> {
       child: Scaffold(
         backgroundColor: colorScheme.onPrimary,
         body: Obx(() {
-          return Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: Column(
-                    children: [
-                      _appBar(colorScheme, context),
-                      Column(
-                        children: [
-                          controller.showWeather.value
-                              ? const WeatherWidget()
-                              : const SizedBox.shrink(),
-                          SizedBox(height: 8.h),
-                          Container(
-                            margin: EdgeInsets.symmetric(vertical: 8.h),
-                            width: 330.w,
-                            padding: EdgeInsets.only(top: 8.h),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [
-                                  Color(0xFFF5F6FF),
-                                  Color(0xFFEFF1FF)
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(15.r),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: colorScheme.shadow
-                                      .withOpacity(0.15),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
+          return RefreshIndicator(
+            onRefresh: controller.onRefresh,
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Column(
+                      children: [
+                        _appBar(colorScheme, context),
+                        Column(
+                          children: [
+                            controller.showWeather.value
+                                ? const WeatherWidget()
+                                : const SizedBox.shrink(),
+                            SizedBox(height: 8.h),
+                            Container(
+                              margin: EdgeInsets.symmetric(vertical: 8.h),
+                              width: 330.w,
+                              padding: EdgeInsets.only(top: 8.h),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFFF5F6FF),
+                                    Color(0xFFEFF1FF)
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
                                 ),
-                              ],
-                            ),
-                            child: Column(
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 10.w),
-                                  child: Row(
-                                    children: [
-                                      _buildRoundIcon(
-                                        colorScheme,
-                                        'assets/icons/calendar.png',
-                                        size: 14.sp,
-                                        padding: 8.sp,
-                                        backgroundColor: colorScheme
-                                            .primary
-                                            .withOpacity(0.15),
-                                      ),
-                                      SizedBox(width: 10.w),
-                                      Text(
-                                        "Approved Shifts",
-                                        style: TextStyle(
-                                          color: colorScheme.onSurface,
-                                          fontSize: 15.sp,
-                                          fontWeight: FontWeight.w600,
-                                          letterSpacing: 0.3,
-                                        ),
-                                      ),
-                                      const Spacer(),
-                                    ],
+                                borderRadius: BorderRadius.circular(15.r),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: colorScheme.shadow
+                                        .withOpacity(0.15),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
                                   ),
-                                ),
-                                SizedBox(height: 6.h),
-                                ApproveShiftContainer(
-                                  colorScheme: colorScheme,
-                                  controller: controller,
-                                ),
-                              ],
+                                ],
+                              ),
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 10.w),
+                                    child: Row(
+                                      children: [
+                                        _buildRoundIcon(
+                                          colorScheme,
+                                          'assets/icons/calendar.png',
+                                          size: 14.sp,
+                                          padding: 8.sp,
+                                          backgroundColor: colorScheme
+                                              .primary
+                                              .withOpacity(0.15),
+                                        ),
+                                        SizedBox(width: 10.w),
+                                        Text(
+                                          "Approved Shifts",
+                                          style: TextStyle(
+                                            color: colorScheme.onSurface,
+                                            fontSize: 15.sp,
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: 0.3,
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(height: 6.h),
+                                  ApproveShiftContainer(
+                                    colorScheme: colorScheme,
+                                    controller: controller,
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              _shiftRequestButton(colorScheme, context),
-            ],
+                _shiftRequestButton(colorScheme, context),
+              ],
+            ),
           );
         }),
       ),
@@ -147,26 +149,26 @@ class HomeView extends GetView<HomeController> {
     );
   }
 
-  Widget _buildRefreshButton(ColorScheme colorScheme) {
-    return InkWell(
-      onTap: () {
-        controller.onRefresh();
-      },
-      borderRadius: BorderRadius.circular(20.r),
-      child: Container(
-        padding: EdgeInsets.all(8.r),
-        decoration: BoxDecoration(
-          color: colorScheme.primary.withOpacity(0.12),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(
-          Icons.refresh_rounded,
-          size: 20.r,
-          color: colorScheme.primary,
-        ),
-      ),
-    );
-  }
+  // Widget _buildRefreshButton(ColorScheme colorScheme) {
+  //   return InkWell(
+  //     onTap: () {
+  //       controller.onRefresh();
+  //     },
+  //     borderRadius: BorderRadius.circular(20.r),
+  //     child: Container(
+  //       padding: EdgeInsets.all(8.r),
+  //       decoration: BoxDecoration(
+  //         color: colorScheme.primary.withOpacity(0.12),
+  //         shape: BoxShape.circle,
+  //       ),
+  //       child: Icon(
+  //         Icons.refresh_rounded,
+  //         size: 20.r,
+  //         color: colorScheme.primary,
+  //       ),
+  //     ),
+  //   );
+  // }
 
   void _showCustomMenu(BuildContext context) {
     showGeneralDialog(
@@ -229,7 +231,7 @@ class HomeView extends GetView<HomeController> {
                     ),
                   ],
                 ),
-                _buildRefreshButton(colorScheme),
+                // _buildRefreshButton(colorScheme),
               ],
             ),
           ),
