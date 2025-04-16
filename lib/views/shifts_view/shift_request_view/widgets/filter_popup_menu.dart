@@ -186,7 +186,7 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Filter By Status',
+            'Display By Status',
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w600,

@@ -118,7 +118,7 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
             SizedBox(height: 8.h),
             _buildDivider(colorScheme),
             SizedBox(height: 8.h),
-            _buildMenuItem(
+            Obx(() => _buildMenuItem(
               context,
               'All',
                   () {
@@ -129,8 +129,9 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
               colorScheme,
               'all',
               Icons.filter_list_rounded,
-            ),
-            _buildMenuItem(
+              colorScheme.primary,
+            )),
+            Obx(() => _buildMenuItem(
               context,
               'Pending',
                   () {
@@ -139,10 +140,11 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
                 controller.filterForms();
               },
               colorScheme,
-              'P',
-              Icons.pending_actions_rounded,
-            ),
-            _buildMenuItem(
+              'pending',
+              Icons.pending_rounded,
+              Colors.amber,
+            )),
+            Obx(() => _buildMenuItem(
               context,
               'Completed',
                   () {
@@ -151,10 +153,10 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
                 controller.filterForms();
               },
               colorScheme,
-              'C',
-              Icons.check_circle_outline_rounded,
-            ),
-
+              'completed',
+              Icons.check_circle_rounded,
+              Colors.green,
+            )),
           ],
         ),
       ),
@@ -168,7 +170,7 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Filter By Status',
+            'Display By Status',
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w600,
@@ -218,9 +220,10 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
       ColorScheme colorScheme,
       String statusCode,
       IconData icon,
+      Color iconColor,
       ) {
-    final isSelected = controller.selectedStatus.value.toLowerCase() ==
-        statusCode.toLowerCase();
+    // Directly compare with the controller's value to determine if selected
+    final isSelected = controller.selectedStatus.value == statusCode;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
@@ -248,7 +251,7 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
                     size: 20.sp,
                     color: isSelected
                         ? colorScheme.primary
-                        : colorScheme.onSurface.withOpacity(0.6),
+                        : iconColor.withOpacity(0.7),
                   ),
                   SizedBox(width: 12.w),
                   Text(

@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:mos_checkin/views/home_view/controller/weather_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../routes/app_routes.dart';
@@ -50,6 +51,18 @@ class HomeController extends GetxController {
     _checkForUpdates();
 
     super.onInit();
+  }
+
+  bool isSameDay(DateTime date1, DateTime date2) {
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
+  }
+
+  Future<void> onRefresh() async {
+    fetchClientShifts();
+    final weatherController = Get.find<WeatherController>();
+    weatherController.fetchWeatherData();
   }
 
   Future<void> _checkForUpdates() async {
