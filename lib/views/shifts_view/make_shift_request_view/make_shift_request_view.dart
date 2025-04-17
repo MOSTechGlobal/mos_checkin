@@ -63,6 +63,12 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
                 pickedTime.hour, pickedTime.minute);
             controller.startTimeController.value =
                 DateFormat('hh:mm aa').format(selectedDateTime);
+            // Automatically set end time to one hour later when twoDaysShift is false
+            if (!controller.twoDaysShift.value) {
+              final endDateTime = selectedDateTime.add(Duration(hours: 1));
+              controller.endTimeController.value =
+                  DateFormat('hh:mm aa').format(endDateTime);
+            }
           },
           hintText: 'Select start time',
           enabled: controller.selectedStartDate.value != null,
@@ -93,15 +99,13 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
           key: ValueKey(controller.twoDaysShift.value
               ? controller.selectedEndDate.value
               : controller.selectedStartDate.value),
-
           initialDate: controller.twoDaysShift.value
               ? controller.selectedEndDate.value
               : controller.selectedStartDate.value,
-
-
           onDateChanged: (pickedDate) {
             if (!controller.twoDaysShift.value) {
-              controller.selectedEndDate.value = controller.selectedStartDate.value;
+              controller.selectedEndDate.value =
+                  controller.selectedStartDate.value;
               return;
             }
 
@@ -121,14 +125,11 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
               );
             }
           },
-
           hintText: 'Select end date',
           label: 'Choose end date and time',
-
           enabled: controller.twoDaysShift.value &&
               controller.selectedStartDate.value != null &&
               controller.startTimeController.value.isNotEmpty,
-
           onTapWhenDisabled: () {
             if (!controller.twoDaysShift.value) {
             } else {
@@ -153,16 +154,21 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
           initialTime: controller.startTimeController.value.isNotEmpty
               ? DateFormat('hh:mm aa')
                   .parse(controller.startTimeController.value)
-                  .add(Duration(hours: 1))
+                  .add(const Duration(hours: 1))
               : null,
           onTimeChanged: (pickedTime) {
+            final selectedDateTime = DateTime(pickedTime.year, pickedTime.month,
+                pickedTime.day, pickedTime.hour, pickedTime.minute);
             if (!controller.twoDaysShift.value) {
-                controller.endTimeController.value = controller.startTimeController.value;
+              // Set end time to one hour after start time
+              final startTime = DateFormat('hh:mm aa')
+                  .parse(controller.startTimeController.value);
+              final endDateTime = startTime.add(Duration(hours: 1));
+              controller.endTimeController.value =
+                  DateFormat('hh:mm aa').format(endDateTime);
               return;
             }
-            final now = DateTime.now();
-            final selectedDateTime = DateTime(now.year, now.month, now.day,
-                pickedTime.hour, pickedTime.minute);
+            // For twoDaysShift true, use the picked time
             controller.endTimeController.value =
                 DateFormat('hh:mm aa').format(selectedDateTime);
           },

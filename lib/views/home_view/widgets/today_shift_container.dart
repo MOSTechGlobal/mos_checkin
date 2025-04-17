@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:intl/intl.dart';
 
-import '../../../routes/app_routes.dart';
 import '../controller/home_controller.dart';
 
 class ApproveShiftContainer extends StatelessWidget {
@@ -23,10 +22,16 @@ class ApproveShiftContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       double calculatedHeight = _calculateDynamicHeight();
-      return SizedBox(
-        width: 330.w,
-        height: calculatedHeight,
-        child: _buildContent(context),
+      // Use LayoutBuilder to get the available width
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          return SizedBox(
+            // Take full available width
+            width: constraints.maxWidth,
+            height: calculatedHeight,
+            child: _buildContent(context),
+          );
+        },
       );
     });
   }
@@ -38,8 +43,8 @@ class ApproveShiftContainer extends StatelessWidget {
       return 70.h;
     } else {
       int itemCount = controller.displayApprovedShifts.length;
-      double itemHeight = 80.h; // Increased for detailed cards
-      double maxHeight = 240.h; // Increased to accommodate more content
+      double itemHeight = 80.h;
+      double maxHeight = 240.h;
       return (itemCount * itemHeight).clamp(90.h, maxHeight);
     }
   }
@@ -47,11 +52,11 @@ class ApproveShiftContainer extends StatelessWidget {
   Widget _buildContent(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 0.h, horizontal: 6.w),
-      child: _buildContentBody(),
+      child: _buildContentBody(context),
     );
   }
 
-  Widget _buildContentBody() {
+  Widget _buildContentBody(BuildContext context) {
     if (controller.isApprovedShiftsLoading.value) {
       return _buildShimmerEffect();
     }
@@ -70,16 +75,20 @@ class ApproveShiftContainer extends StatelessWidget {
     }
 
     final ScrollController scrollController = ScrollController();
+    // Calculate if scrollbar is needed based on content height
+    bool needsScrollbar = _calculateDynamicHeight() >= 240.h;
 
     return Scrollbar(
       controller: scrollController,
       thickness: 6.0,
       radius: Radius.circular(10.r),
-      thumbVisibility: true,
+      thumbVisibility: needsScrollbar,
+      // Show scrollbar only when needed
       interactive: true,
       child: ListView.builder(
         controller: scrollController,
-        padding: EdgeInsets.only(right: 8.w),
+        // Adjust padding based on scrollbar visibility
+        padding: EdgeInsets.only(right: needsScrollbar ? 8.w : 0.w),
         physics: const BouncingScrollPhysics(),
         itemCount: controller.displayApprovedShifts.length,
         itemBuilder: (context, index) {
@@ -91,9 +100,12 @@ class ApproveShiftContainer extends StatelessWidget {
   }
 
   Widget _buildShiftItem(Map<String, dynamic> shiftData) {
-    final service = (shiftData['ServiceDescription'] as String?)?.trim() ?? 'Unknown Service';
-    final shiftStatus = (shiftData['Status'] as String?)?.trim() == 'A' ? 'Approved' : 'Pending';
-    final clientInfo = 'Client ID: ${shiftData['ClientID'] ?? 'Unknown'}'; // Using ClientID as placeholder
+    final service = (shiftData['ServiceDescription'] as String?)?.trim() ??
+        'Unknown Service';
+    final shiftStatus = (shiftData['Status'] as String?)?.trim() == 'A'
+        ? 'Approved'
+        : 'Pending';
+    final clientInfo = 'Client ID: ${shiftData['ClientID'] ?? 'Unknown'}';
 
     // Format shift time
     String shiftTime = '';
@@ -105,7 +117,8 @@ class ApproveShiftContainer extends StatelessWidget {
         final startDateTime = DateTime.parse('$shiftDate $startTime');
         final endDateTime = DateTime.parse('$shiftDate $endTime');
         final timeFormat = DateFormat('h:mm a');
-        shiftTime = '${timeFormat.format(startDateTime)} - ${timeFormat.format(endDateTime)}';
+        shiftTime =
+            '${timeFormat.format(startDateTime)} - ${timeFormat.format(endDateTime)}';
       } else {
         shiftTime = 'Time not available';
       }
@@ -119,11 +132,11 @@ class ApproveShiftContainer extends StatelessWidget {
     Color statusTextColor;
     switch (shiftStatus) {
       case 'Approved':
-        statusColor = const Color(0xFF4CAF50); // Bright green
+        statusColor = const Color(0xFF4CAF50);
         statusTextColor = Colors.white;
         break;
       default:
-        statusColor = const Color(0xFFFFC107); // Amber with better contrast
+        statusColor = const Color(0xFFFFC107);
         statusTextColor = Colors.black87;
     }
 
@@ -229,7 +242,7 @@ class ApproveShiftContainer extends StatelessWidget {
       child: Column(
         children: List.generate(
           1,
-              (index) => Container(
+          (index) => Container(
             margin: EdgeInsets.symmetric(vertical: 6.h),
             padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 14.w),
             height: 80.h,

@@ -180,7 +180,7 @@ class ServiceModalView extends StatelessWidget {
                                   CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      service['Service_Code'] ??
+                                      service['Description'] ??
                                           'No Code',
                                       style: TextStyle(
                                         color: colorScheme.onSurface,
@@ -192,7 +192,7 @@ class ServiceModalView extends StatelessWidget {
                                     ),
                                     SizedBox(height: 4.h),
                                     Text(
-                                      service['Description'] ??
+                                      service['Service_Code'] ??
                                           'No Description',
                                       style: TextStyle(
                                         color: colorScheme.onSurface,
