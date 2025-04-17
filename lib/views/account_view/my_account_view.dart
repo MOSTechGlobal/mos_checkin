@@ -57,7 +57,7 @@ class MyAccountView extends GetView<AccountController> {
                               ),
                             ),
                             onPressed: () {
-                              // controller.uploadPFP(image0!);
+                              controller.uploadPFP(image0!);
                               Get.back();
                             },
                             child: Container(

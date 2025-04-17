@@ -114,102 +114,103 @@ class AccountController extends GetxController {
     }
   }
 
-  // void uploadPFP(XFile image) async {
-  //   try {
-  //     final s3Storage = S3Storage(
-  //       endPoint: 's3.ap-southeast-2.amazonaws.com',
-  //       accessKey: dotenv.env['S3_ACCESS_KEY']!,
-  //       secretKey: dotenv.env['S3_SECRET_KEY']!,
-  //       region: 'ap-southeast-2',
-  //     );
-  //
-  //     final company = await Prefs.getCompanyName();
-  //     // final workerID = await Prefs.getWorkerID();
-  //     final extension = image.path.split('.').last;
-  //
-  //     await s3Storage.putObject(
-  //       'moscaresolutions',
-  //       '$company/worker/$workerID/profile_picture/pfp.$extension',
-  //       Stream<Uint8List>.value(Uint8List.fromList(await image.readAsBytes())),
-  //       onProgress: (progress) => log('Progress: $progress'),
-  //     );
-  //
-  //     getPfp();
-  //   } catch (e) {
-  //     log('Error uploading document: $e');
-  //   }
-  // }
+  void uploadPFP(XFile image) async {
+    try {
+      final s3Storage = S3Storage(
+        endPoint: 's3.ap-southeast-2.amazonaws.com',
+        accessKey: dotenv.env['S3_ACCESS_KEY']!,
+        secretKey: dotenv.env['S3_SECRET_KEY']!,
+        region: 'ap-southeast-2',
+      );
 
-  // Future<void> getPfp() async {
-  //   final possibleExtensions = ['jpg', 'png', 'jpeg', 'webp'];
-  //   isLoading(true);
-  //   try {
-  //     log('Getting profile picture URL');
-  //     final s3Storage = S3Storage(
-  //       endPoint: 's3.ap-southeast-2.amazonaws.com',
-  //       accessKey: dotenv.env['S3_ACCESS_KEY']!,
-  //       secretKey: dotenv.env['S3_SECRET_KEY']!,
-  //       region: 'ap-southeast-2',
-  //     );
-  //
-  //     final company = await Prefs.getCompanyName();
-  //     // final workerID = await Prefs.getWorkerID();
-  //
-  //     for (var ext in possibleExtensions) {
-  //       try {
-  //         final url = await s3Storage.presignedGetObject(
-  //           'moscaresolutions',
-  //           '$company/worker/$workerID/profile_picture/pfp.$ext',
-  //         );
-  //         pfp.value = url;
-  //         log('Profile picture URL found: $pfp');
-  //         break;
-  //       } catch (e) {
-  //         log('Error getting profile picture with .$ext: $e');
-  //       }
-  //     }
-  //   } catch (e) {
-  //     log('Error getting profile picture: $e');
-  //   }finally{
-  //     isLoading(false
-  //     );
-  //   }
-  // }
+      final company = await Prefs.getCompanyName();
+      final clientID = await Prefs.getClientID();
+      final extension = image.path.split('.').last;
 
-  // Future<void> editProfile(context) async {
-  //   final workerID = await Prefs.getWorkerID();
-  //   final body = {
-  //     "WorkerID": workerID,
-  //     "Email": emailController.text,
-  //     "Phone": phoneController.text,
-  //   };
-  //
-  //   try {
-  //     final res = await Api.post('editprofileofworker', body);
-  //     log('Edit profile response: $res');
-  //
-  //     if (res['success'] == true) {
-  //       // Update reactive variables directly
-  //       workerData['Email'] = emailController.text;
-  //       workerData['Phone'] = phoneController.text;
-  //
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(content: Text('Profile updated successfully!')),
-  //       );
-  //
-  //       // Close the bottom sheet
-  //       Navigator.pop(context);
-  //     } else {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text(res['message'] ?? 'Error updating profile')),
-  //       );
-  //     }
-  //   } catch (e) {
-  //     log('Error editing profile: $e');
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('Error updating profile')),
-  //     );
-  //   }
-  // }
+      await s3Storage.putObject(
+        'moscaresolutions',
+        '$company/worker/$clientID/profile_picture/pfp.$extension',
+        Stream<Uint8List>.value(Uint8List.fromList(await image.readAsBytes())),
+        onProgress: (progress) => log('Progress: $progress'),
+      );
+
+      getPfp();
+    } catch (e) {
+      log('Error uploading document: $e');
+    }
+  }
+
+  Future<void> getPfp() async {
+    final possibleExtensions = ['jpg', 'png', 'jpeg', 'webp'];
+    isLoading(true);
+    try {
+      log('Getting profile picture URL');
+      final s3Storage = S3Storage(
+        endPoint: 's3.ap-southeast-2.amazonaws.com',
+        accessKey: dotenv.env['S3_ACCESS_KEY']!,
+        secretKey: dotenv.env['S3_SECRET_KEY']!,
+        region: 'ap-southeast-2',
+      );
+
+      final company = await Prefs.getCompanyName();
+      final clientID = await Prefs.getClientID();
+
+      for (var ext in possibleExtensions) {
+        try {
+          final url = await s3Storage.presignedGetObject(
+            'moscaresolutions',
+            '$company/worker/$clientID/profile_picture/pfp.$ext',
+          );
+          pfp.value = url;
+          log('Profile picture URL found: $pfp');
+          break;
+        } catch (e) {
+          log('Error getting profile picture with .$ext: $e');
+        }
+      }
+    } catch (e) {
+      log('Error getting profile picture: $e');
+    }finally{
+      isLoading(false
+      );
+    }
+  }
+
+  Future<void> editProfile(context) async {
+    final clientID = await Prefs.getClientID();
+
+    final body = {
+      "WorkerID": clientID,
+      "Email": emailController.text,
+      "Phone": phoneController.text,
+    };
+
+    try {
+      final res = await Api.post('editprofileofworker', body);
+      log('Edit profile response: $res');
+
+      if (res['success'] == true) {
+        // Update reactive variables directly
+        clientData['Email'] = emailController.text;
+        clientData['Phone'] = phoneController.text;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile updated successfully!')),
+        );
+
+        // Close the bottom sheet
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? 'Error updating profile')),
+        );
+      }
+    } catch (e) {
+      log('Error editing profile: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error updating profile')),
+      );
+    }
+  }
 
 }
