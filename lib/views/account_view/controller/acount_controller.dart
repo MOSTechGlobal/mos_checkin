@@ -32,6 +32,7 @@ class AccountController extends GetxController {
   void onInit() {
     super.onInit();
     fetchPrefs();
+    getPfp();
     fetchWorkerData();
     // getPfp();
   }
@@ -125,11 +126,12 @@ class AccountController extends GetxController {
 
       final company = await Prefs.getCompanyName();
       final clientID = await Prefs.getClientID();
+
       final extension = image.path.split('.').last;
 
       await s3Storage.putObject(
         'moscaresolutions',
-        '$company/worker/$clientID/profile_picture/pfp.$extension',
+        '$company/client/$clientID/profile_picture/pfp.$extension',
         Stream<Uint8List>.value(Uint8List.fromList(await image.readAsBytes())),
         onProgress: (progress) => log('Progress: $progress'),
       );
@@ -159,7 +161,7 @@ class AccountController extends GetxController {
         try {
           final url = await s3Storage.presignedGetObject(
             'moscaresolutions',
-            '$company/worker/$clientID/profile_picture/pfp.$ext',
+            '$company/client/$clientID/profile_picture/pfp.$ext',
           );
           pfp.value = url;
           log('Profile picture URL found: $pfp');
@@ -170,23 +172,23 @@ class AccountController extends GetxController {
       }
     } catch (e) {
       log('Error getting profile picture: $e');
-    }finally{
-      isLoading(false
-      );
+    } finally {
+      isLoading(false);
     }
   }
 
   Future<void> editProfile(context) async {
     final clientID = await Prefs.getClientID();
-
-    final body = {
-      "WorkerID": clientID,
-      "Email": emailController.text,
-      "Phone": phoneController.text,
+    final body ={
+      "data": {
+        "Email": emailController.text,
+        "Phone": phoneController.text
+      }
     };
 
     try {
-      final res = await Api.post('editprofileofworker', body);
+      isLoading.value = true;
+      final res = await Api.put('updateClientMasterData/$clientID', body);
       log('Edit profile response: $res');
 
       if (res['success'] == true) {
@@ -210,6 +212,8 @@ class AccountController extends GetxController {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error updating profile')),
       );
+    }finally{
+      isLoading.value = false;
     }
   }
 

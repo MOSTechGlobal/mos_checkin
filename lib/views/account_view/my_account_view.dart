@@ -312,11 +312,11 @@ class MyAccountView extends GetView<AccountController> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      GestureDetector(
+                      Obx((){return GestureDetector(
                         onTap: () async {
-                          // await controller.editProfile(context);
+                          await controller.editProfile(context);
                         },
-                        child: Container(
+                        child:controller.isLoading.value? CircularProgressIndicator(): Container(
                           height: 50.h,
                           decoration: BoxDecoration(
                             color: colorScheme.primary,
@@ -331,13 +331,13 @@ class MyAccountView extends GetView<AccountController> {
                           ),
                           child: Center(
                               child: Text(
-                            'Save',
-                            style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: colorScheme.onPrimary),
-                          )),
+                                'Save',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: colorScheme.onPrimary),
+                              )),
                         ),
-                      ),
+                      );}),
                       const SizedBox(height: 20),
                     ],
                   ),
@@ -635,60 +635,57 @@ class MyAccountView extends GetView<AccountController> {
   Widget _profileSection(colorScheme, context) {
     return Column(
       children: [
-        Stack(
-          children: [
-            Container(
-              height: 80.h,
-              width: 80.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: colorScheme.outline),
+        GestureDetector(
+          onTap: ()=>showProfileDialog(context, colorScheme),
+          child: Stack(
+            children: [
+              Container(
+                height: 80.h,
+                width: 80.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: colorScheme.outline),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(50),
+                  child: controller.pfp.isNotEmpty
+                      ? Image.network(
+                          controller.pfp.value,
+                          width: 100.w,
+                          height: 100.h,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.asset(
+                              'assets/images/dummyUser.png',
+                              width: 100.w,
+                              height: 100.h,
+                              fit: BoxFit.cover,
+                            );
+                          },
+                        )
+                      : Image.asset(
+                          'assets/images/dummyUser.png',
+                          width: 100.w,
+                          height: 100.h,
+                          fit: BoxFit.cover,
+                        ),
+                ),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(50),
-                child: controller.pfp.isNotEmpty
-                    ? Image.network(
-                        controller.pfp.value,
-                        width: 100.w,
-                        height: 100.h,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Image.asset(
-                            'assets/images/dummyUser.png',
-                            width: 100.w,
-                            height: 100.h,
-                            fit: BoxFit.cover,
-                          );
-                        },
-                      )
-                    : Image.asset(
-                        'assets/images/dummyUser.png',
-                        width: 100.w,
-                        height: 100.h,
-                        fit: BoxFit.cover,
-                      ),
-              ),
-            ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: CircleAvatar(
-                radius: 12, // Adjust size as needed
-                backgroundColor: colorScheme.primary,
-                child: IconButton(
-                  onPressed: () {
-                    showProfileDialog(context, colorScheme);
-                  },
-                  padding: EdgeInsets.zero, // Ensure no extra padding
-                  icon: Icon(
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: CircleAvatar(
+                  radius: 12, // Adjust size as needed
+                  backgroundColor: colorScheme.primary,
+                  child: Icon(
                     Icons.edit,
                     size: 14, // Adjust icon size to fit well
                     color: colorScheme.onPrimary,
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         Text(
           '${controller.clientData['FirstName'] ?? ''} ${controller.clientData['LastName'] ?? ''}',
