@@ -12,7 +12,6 @@ import '../../../utils/common_widgets/common_date_picker.dart';
 import '../../../utils/common_widgets/common_dropdown.dart';
 import '../../../utils/common_widgets/common_textfield.dart';
 import '../../../utils/common_widgets/common_time_picker.dart';
-import '../../../utils/prefs.dart';
 import 'controller/make_shift_request_controller.dart';
 
 class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
@@ -48,6 +47,9 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
                 DateFormat('dd-MM-yyyy').format(pickedDate);
             controller.endDateController.value =
                 DateFormat('dd-MM-yyyy').format(pickedDate);
+            if (!controller.twoDaysShift.value) {
+              controller.selectedEndDate.value = pickedDate;
+            }
           },
           hintText: 'Select start date',
           label: 'Choose start date and time',
@@ -71,47 +73,93 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
           },
         ),
         SizedBox(height: 10.h),
+        Row(
+          children: [
+            Obx(
+              () => Checkbox(
+                  value: controller.twoDaysShift.value,
+                  onChanged: (value) {
+                    controller.twoDaysShift.value = value!;
+                  }),
+            ),
+            Text(
+              'Shift Occurs Over Two Days',
+              style: TextStyle(fontSize: 12.sp),
+            )
+          ],
+        ),
+        SizedBox(height: 10.h),
         CommonDatePicker(
-          initialDate: controller.selectedEndDate.value,
+          key: ValueKey(controller.twoDaysShift.value
+              ? controller.selectedEndDate.value
+              : controller.selectedStartDate.value),
+
+          initialDate: controller.twoDaysShift.value
+              ? controller.selectedEndDate.value
+              : controller.selectedStartDate.value,
+
+
           onDateChanged: (pickedDate) {
-            if (pickedDate.isAfter(controller.selectedStartDate.value!)) {
+            if (!controller.twoDaysShift.value) {
+              controller.selectedEndDate.value = controller.selectedStartDate.value;
+              return;
+            }
+
+            final startDate = controller.selectedStartDate.value!;
+            final maxDate = startDate.add(Duration(days: 1));
+
+            if (pickedDate.isAfter(startDate) && !pickedDate.isAfter(maxDate)) {
               controller.selectedEndDate.value = pickedDate;
               controller.endDateController.value =
                   DateFormat('dd-MM-yyyy').format(pickedDate);
             } else {
               Get.snackbar(
                 'Invalid Date',
-                'End date must be after start date',
+                'End date must be within 2 days after start date',
                 colorText: colorScheme.onPrimary,
                 backgroundColor: colorScheme.error,
               );
             }
           },
+
           hintText: 'Select end date',
           label: 'Choose end date and time',
-          enabled: controller.selectedStartDate.value != null &&
+
+          enabled: controller.twoDaysShift.value &&
+              controller.selectedStartDate.value != null &&
               controller.startTimeController.value.isNotEmpty,
+
           onTapWhenDisabled: () {
-            print(
-                'Debug: selectedStartDate: ${controller.selectedStartDate.value}, '
-                    'startTimeController: "${controller.startTimeController.value}"');
-            Get.snackbar(
-              'Attention',
-              controller.selectedStartDate.value == null &&
-                  controller.startTimeController.value.isEmpty
-                  ? 'Please select both start date and start time first'
-                  : controller.selectedStartDate.value == null
-                  ? 'Please select a start date first'
-                  : 'Please select a start time first',
-              colorText: colorScheme.onPrimary,
-              backgroundColor: colorScheme.error,
-            );
+            if (!controller.twoDaysShift.value) {
+            } else {
+              Get.snackbar(
+                'Attention',
+                controller.selectedStartDate.value == null &&
+                        controller.startTimeController.value.isEmpty
+                    ? 'Please select both start date and start time first'
+                    : controller.selectedStartDate.value == null
+                        ? 'Please select a start date first'
+                        : 'Please select a start time first',
+                colorText: colorScheme.onPrimary,
+                backgroundColor: colorScheme.error,
+              );
+            }
           },
         ),
         SizedBox(height: 10.h),
         CommonTimePicker(
+          key: ValueKey(controller.startTimeController.value),
           associatedDate: controller.selectedEndDate.value,
+          initialTime: controller.startTimeController.value.isNotEmpty
+              ? DateFormat('hh:mm aa')
+                  .parse(controller.startTimeController.value)
+                  .add(Duration(hours: 1))
+              : null,
           onTimeChanged: (pickedTime) {
+            if (!controller.twoDaysShift.value) {
+                controller.endTimeController.value = controller.startTimeController.value;
+              return;
+            }
             final now = DateTime.now();
             final selectedDateTime = DateTime(now.year, now.month, now.day,
                 pickedTime.hour, pickedTime.minute);
@@ -128,8 +176,8 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
               controller.selectedStartDate.value == null
                   ? 'Please select a start date first'
                   : controller.startTimeController.value.isEmpty
-                  ? 'Please select a start time first'
-                  : 'Please select an end date first',
+                      ? 'Please select a start time first'
+                      : 'Please select an end date first',
               colorText: colorScheme.onPrimary,
               backgroundColor: colorScheme.error,
             );
@@ -154,24 +202,28 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
         ),
         GestureDetector(
           onTap: (controller.selectedStartDate.value != null &&
-              controller.startTimeController.value.isNotEmpty &&
-              controller.selectedEndDate.value != null &&
-              controller.endTimeController.value.isNotEmpty)
+                  controller.startTimeController.value.isNotEmpty &&
+                  controller.selectedEndDate.value != null &&
+                  controller.endTimeController.value.isNotEmpty)
               ? () => _showServicePicker(context)
               : () {
-            Get.snackbar(
-              'Attention',
-              controller.selectedStartDate.value == null
-                  ? 'Please select a start date first'
-                  : controller.startTimeController.value.isEmpty
-                  ? 'Please select a start time first'
-                  : controller.endDateController.value.isEmpty
-                  ? 'Please select an end date first'
-                  : 'Please select end time first',
-              colorText: colorScheme.onPrimary,
-              backgroundColor: colorScheme.error,
-            );
-          },
+                  log(controller.selectedStartDate.value.toString());
+                  log(controller.selectedEndDate.value.toString());
+                  log(controller.startTimeController.value.toString());
+                  log(controller.endTimeController.value.toString());
+                  Get.snackbar(
+                    'Attention',
+                    controller.selectedStartDate.value == null
+                        ? 'Please select a start date first'
+                        : controller.startTimeController.value.isEmpty
+                            ? 'Please select a start time first'
+                            : controller.endDateController.value.isEmpty
+                                ? 'Please select an end date first'
+                                : 'Please select end time first',
+                    colorText: colorScheme.onPrimary,
+                    backgroundColor: colorScheme.error,
+                  );
+                },
           child: Container(
             padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 10.w),
             decoration: BoxDecoration(
@@ -192,11 +244,11 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
                   child: Text(
                     controller.selectedService.value.isNotEmpty
                         ? controller.shiftServices.firstWhere(
-                          (service) =>
-                      service['Service_Code'].toString() ==
-                          controller.selectedService.value,
-                      orElse: () => {'Description': 'Service not found'},
-                    )['Description']
+                            (service) =>
+                                service['Service_Code'].toString() ==
+                                controller.selectedService.value,
+                            orElse: () => {'Description': 'Service not found'},
+                          )['Description']
                         : 'Select Service',
                     style: TextStyle(
                       color: controller.selectedService.value.isEmpty
@@ -251,28 +303,30 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
     // Open dialog immediately
     Get.dialog(
       Obx(() => ServiceModalView(
-        allServices: controller.shiftServices.toSet(),
-        currentServices: controller.selectedService.value.isNotEmpty
-            ? {
-          controller.shiftServices.firstWhere(
-                (service) =>
-            service['Service_Code'] ==
-                controller.selectedService.value,
-            orElse: () =>
-            {'Service_Code': '', 'Description': 'Service not found'},
-          ),
-        }
-            : {},
-        agreementCode: clientId.toString(),
-        startDate: controller.selectedStartDate.value!,
-        startTime: controller.startTimeController.value,
-        onAddServices: (selectedServices) {
-          if (selectedServices.isNotEmpty) {
-            controller.selectedService.value =
-            selectedServices.first['Service_Code'];
-          }
-        },
-      )),
+            allServices: controller.shiftServices.toSet(),
+            currentServices: controller.selectedService.value.isNotEmpty
+                ? {
+                    controller.shiftServices.firstWhere(
+                      (service) =>
+                          service['Service_Code'] ==
+                          controller.selectedService.value,
+                      orElse: () => {
+                        'Service_Code': '',
+                        'Description': 'Service not found'
+                      },
+                    ),
+                  }
+                : {},
+            agreementCode: clientId.toString(),
+            startDate: controller.selectedStartDate.value!,
+            startTime: controller.startTimeController.value,
+            onAddServices: (selectedServices) {
+              if (selectedServices.isNotEmpty) {
+                controller.selectedService.value =
+                    selectedServices.first['Service_Code'];
+              }
+            },
+          )),
       barrierDismissible: false, // Prevent closing during loading
     );
 
@@ -343,7 +397,7 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
                       scale: 0.8,
                       child: Radio(
                         visualDensity:
-                        const VisualDensity(horizontal: -4, vertical: -4),
+                            const VisualDensity(horizontal: -4, vertical: -4),
                         value: true,
                         groupValue: controller.isDayBasedRecurrence.value,
                         onChanged: (value) {
@@ -424,7 +478,7 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
                         },
                         activeColor: colorScheme.primary,
                         visualDensity:
-                        const VisualDensity(horizontal: -4, vertical: -4),
+                            const VisualDensity(horizontal: -4, vertical: -4),
                       ),
                     ),
                     Text(
@@ -444,8 +498,8 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
                   onChanged: controller.isDayBasedRecurrence.value
                       ? null
                       : (value) {
-                    controller.selectedOccurance.value = value!;
-                  },
+                          controller.selectedOccurance.value = value!;
+                        },
                   paddingVertical: 2,
                   enabled: !controller.isDayBasedRecurrence.value,
                 ),
@@ -467,8 +521,8 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
                   onChanged: controller.isDayBasedRecurrence.value
                       ? null
                       : (value) {
-                    controller.selectedWeekDay.value = value!;
-                  },
+                          controller.selectedWeekDay.value = value!;
+                        },
                   paddingVertical: 2,
                   enabled: !controller.isDayBasedRecurrence.value,
                 ),
@@ -483,204 +537,204 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
   Widget _buildRecurringShiftOptions(
       BuildContext context, ColorScheme colorScheme) {
     return Obx(() => Column(
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            color: colorScheme.onPrimary,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Theme.of(context).colorScheme.shadow,
-                blurRadius: 2,
-                offset: const Offset(0, 1),
-              )
-            ],
-          ),
-          padding: EdgeInsets.only(left: 10.w, top: 5.h, bottom: 5.h),
-          child: GestureDetector(
-            onTap: () {
-              controller.isRecurringShift.value =
-              !controller.isRecurringShift.value;
-            },
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Recurring Shift',
-                    style: TextStyle(
-                      fontSize:
-                      controller.isRecurringShift.value ? 14.sp : 12.sp,
-                      fontWeight: FontWeight.w500,
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-                Transform.scale(
-                  scale: controller.isRecurringShift.value ? 1 : 0.8,
-                  child: Checkbox(
-                    value: controller.isRecurringShift.value,
-                    onChanged: (value) {
-                      controller.isRecurringShift.value = value ?? false;
-                    },
-                    activeColor: colorScheme.primary,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                )
-              ],
-            ),
-          ),
-        ),
-        if (controller.isRecurringShift.value)
-          Container(
-            margin: EdgeInsets.symmetric(vertical: 10.h),
-            padding: EdgeInsets.symmetric(vertical: 6.h, horizontal: 10.w),
-            decoration: BoxDecoration(
-              color: colorScheme.onPrimary,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Theme.of(context).colorScheme.shadow,
-                  blurRadius: 2,
-                  offset: const Offset(0, 1),
-                )
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: colorScheme.onPrimary,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context).colorScheme.shadow,
+                    blurRadius: 2,
+                    offset: const Offset(0, 1),
+                  )
+                ],
+              ),
+              padding: EdgeInsets.only(left: 10.w, top: 5.h, bottom: 5.h),
+              child: GestureDetector(
+                onTap: () {
+                  controller.isRecurringShift.value =
+                      !controller.isRecurringShift.value;
+                },
+                child: Row(
                   children: [
-                    Text(
-                      'Repeat Every',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w500,
-                        color: colorScheme.onSurface,
+                    Expanded(
+                      child: Text(
+                        'Recurring Shift',
+                        style: TextStyle(
+                          fontSize:
+                              controller.isRecurringShift.value ? 14.sp : 12.sp,
+                          fontWeight: FontWeight.w500,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
                     ),
-                    SizedBox(width: 10.w),
-                    Flexible(
-                      child: CommonTextField(
-                        hintText: 'number',
-                        controller: controller.repeatEveryController,
-                        keyboardType: TextInputType.number,
-                        paddingVertical: 5,
+                    Transform.scale(
+                      scale: controller.isRecurringShift.value ? 1 : 0.8,
+                      child: Checkbox(
+                        value: controller.isRecurringShift.value,
                         onChanged: (value) {
-                          if (value.isEmpty) {
-                            controller.repeatEveryController.text = '';
-                            return;
-                          }
-                          int? parsedValue = int.tryParse(value);
-                          if (parsedValue == null ||
-                              parsedValue < 0 ||
-                              parsedValue > 99) {
-                            Get.snackbar(
-                              'Invalid input',
-                              'Please enter a valid number between 1 and 99',
-                              snackPosition: SnackPosition.BOTTOM,
-                              backgroundColor: colorScheme.error,
-                              colorText: colorScheme.onPrimary,
-                            );
-                            controller.repeatEveryController.text = '1';
-                            controller.repeatEveryController.selection =
-                                TextSelection.fromPosition(
+                          controller.isRecurringShift.value = value ?? false;
+                        },
+                        activeColor: colorScheme.primary,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ),
+            if (controller.isRecurringShift.value)
+              Container(
+                margin: EdgeInsets.symmetric(vertical: 10.h),
+                padding: EdgeInsets.symmetric(vertical: 6.h, horizontal: 10.w),
+                decoration: BoxDecoration(
+                  color: colorScheme.onPrimary,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Theme.of(context).colorScheme.shadow,
+                      blurRadius: 2,
+                      offset: const Offset(0, 1),
+                    )
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Repeat Every',
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w500,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                        SizedBox(width: 10.w),
+                        Flexible(
+                          child: CommonTextField(
+                            hintText: 'number',
+                            controller: controller.repeatEveryController,
+                            keyboardType: TextInputType.number,
+                            paddingVertical: 5,
+                            onChanged: (value) {
+                              if (value.isEmpty) {
+                                controller.repeatEveryController.text = '';
+                                return;
+                              }
+                              int? parsedValue = int.tryParse(value);
+                              if (parsedValue == null ||
+                                  parsedValue < 0 ||
+                                  parsedValue > 99) {
+                                Get.snackbar(
+                                  'Invalid input',
+                                  'Please enter a valid number between 1 and 99',
+                                  snackPosition: SnackPosition.BOTTOM,
+                                  backgroundColor: colorScheme.error,
+                                  colorText: colorScheme.onPrimary,
+                                );
+                                controller.repeatEveryController.text = '1';
+                                controller.repeatEveryController.selection =
+                                    TextSelection.fromPosition(
                                   TextPosition(
                                       offset: controller
                                           .repeatEveryController.text.length),
                                 );
-                          }
-                        },
-                      ),
-                    ),
-                    SizedBox(width: 2.w),
-                    Flexible(
-                      child: CommonDropdown(
-                        value: controller.selectedRecurringShiftType.value,
-                        items: const <String>['days', 'weeks', 'months'],
-                        hintText: 'Select',
-                        onChanged: (value) {
-                          controller.selectedRecurringShiftType.value =
-                          value!;
-                        },
-                        iconWidth: 16,
-                        paddingVertical: 3,
-                      ),
-                    ),
-                  ],
-                ),
-                if (controller.selectedRecurringShiftType.value == 'weeks')
-                  Container(
-                    padding: EdgeInsets.symmetric(vertical: 6.h),
-                    margin: EdgeInsets.symmetric(vertical: 10.h),
-                    decoration: BoxDecoration(
-                      color: colorScheme.onPrimary,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(context).colorScheme.shadow,
-                          blurRadius: 2,
-                          offset: const Offset(0, 1),
-                        )
+                              }
+                            },
+                          ),
+                        ),
+                        SizedBox(width: 2.w),
+                        Flexible(
+                          child: CommonDropdown(
+                            value: controller.selectedRecurringShiftType.value,
+                            items: const <String>['days', 'weeks', 'months'],
+                            hintText: 'Select',
+                            onChanged: (value) {
+                              controller.selectedRecurringShiftType.value =
+                                  value!;
+                            },
+                            iconWidth: 16,
+                            paddingVertical: 3,
+                          ),
+                        ),
                       ],
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        for (var day in [
-                          'Mo',
-                          'Tu',
-                          'We',
-                          'Th',
-                          'Fr',
-                          'Sa',
-                          'Su'
-                        ])
-                          GestureDetector(
-                            onTap: () {
-                              controller.selectedWeekDays[day]?.value =
-                              !controller.selectedWeekDays[day]!.value;
-                            },
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color:
-                                controller.selectedWeekDays[day]!.value
-                                    ? colorScheme.primary
-                                    : colorScheme.onSurface
-                                    .withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  day,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: controller
-                                        .selectedWeekDays[day]!.value
-                                        ? colorScheme.onSecondary
-                                        : colorScheme.onSurface
-                                        .withOpacity(0.5),
+                    if (controller.selectedRecurringShiftType.value == 'weeks')
+                      Container(
+                        padding: EdgeInsets.symmetric(vertical: 6.h),
+                        margin: EdgeInsets.symmetric(vertical: 10.h),
+                        decoration: BoxDecoration(
+                          color: colorScheme.onPrimary,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Theme.of(context).colorScheme.shadow,
+                              blurRadius: 2,
+                              offset: const Offset(0, 1),
+                            )
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            for (var day in [
+                              'Mo',
+                              'Tu',
+                              'We',
+                              'Th',
+                              'Fr',
+                              'Sa',
+                              'Su'
+                            ])
+                              GestureDetector(
+                                onTap: () {
+                                  controller.selectedWeekDays[day]?.value =
+                                      !controller.selectedWeekDays[day]!.value;
+                                },
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        controller.selectedWeekDays[day]!.value
+                                            ? colorScheme.primary
+                                            : colorScheme.onSurface
+                                                .withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(50),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      day,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: controller
+                                                .selectedWeekDays[day]!.value
+                                            ? colorScheme.onSecondary
+                                            : colorScheme.onSurface
+                                                .withOpacity(0.5),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                if (controller.selectedRecurringShiftType.value == 'months')
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 10.h),
-                    child: _buildMonthlyRecurrenceOptions(
-                        context, colorScheme),
-                  ),
-              ],
-            ),
-          ),
-      ],
-    ));
+                          ],
+                        ),
+                      ),
+                    if (controller.selectedRecurringShiftType.value == 'months')
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: 10.h),
+                        child: _buildMonthlyRecurrenceOptions(
+                            context, colorScheme),
+                      ),
+                  ],
+                ),
+              ),
+          ],
+        ));
   }
 
   @override
@@ -702,7 +756,7 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
                 child: Container(
                   width: double.infinity,
                   margin:
-                  EdgeInsets.symmetric(horizontal: 10.w, vertical: 16.h),
+                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 16.h),
                   decoration: BoxDecoration(
                     color: colorScheme.onPrimary,
                     borderRadius: BorderRadius.circular(12.r),
@@ -716,7 +770,7 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
                   ),
                   child: Padding(
                     padding:
-                    EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -730,11 +784,11 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
                           onPressed: controller.isSubmitting.value
                               ? null
                               : controller.selectedService.value.isEmpty
-                              ? null
-                              : () {
-                            controller.extractData(
-                                context, colorScheme);
-                          },
+                                  ? null
+                                  : () {
+                                      controller.extractData(
+                                          context, colorScheme);
+                                    },
                           isSaving: controller.isSubmitting.value,
                         ),
                       ],

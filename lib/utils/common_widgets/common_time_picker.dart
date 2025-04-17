@@ -109,7 +109,14 @@ class CommonTimePicker extends FormField<DateTime> {
                             initialDateTime: tempTime.isBefore(DateTime.now()) && isToday
                                 ? DateTime.now()
                                 : tempTime,
-                            minimumDate: isToday ? DateTime.now() : null, // This is the key!
+                            minimumDate: isToday ? DateTime.now() : null,
+                            maximumDate: DateTime(
+                              associatedDate?.year ?? now.year,
+                              associatedDate?.month ?? now.month,
+                              associatedDate?.day ?? now.day,
+                              23,
+                              59,
+                            ),
                             onDateTimeChanged: (DateTime newTime) {
                               setState(() {
                                 tempTime = newTime;

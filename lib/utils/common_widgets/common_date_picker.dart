@@ -29,7 +29,9 @@ class CommonDatePicker extends FormField<DateTime> {
             DateTime rawInitial = state.value ?? initialDate ?? DateTime.now();
             DateTime minimumDate = initialDate ?? DateTime.now();
             DateTime tempDate = rawInitial.isBefore(minimumDate) ? minimumDate : rawInitial;
-
+            DateTime maximumDate = initialDate != null
+                ? initialDate.add(Duration(days: 1))
+                : DateTime.now().add(Duration(days: 1));
             return StatefulBuilder(
               builder: (context, setState) {
                 return Container(
@@ -54,13 +56,22 @@ class CommonDatePicker extends FormField<DateTime> {
                           mode: CupertinoDatePickerMode.date,
                           initialDateTime: tempDate,
                           minimumDate: minimumDate,
+                          maximumDate: maximumDate,
                           onDateTimeChanged: (DateTime newDate) {
                             final DateTime minDate = minimumDate;
+                            final DateTime maxDate = maximumDate;
                             setState(() {
-                              tempDate = newDate.isBefore(minDate) ? minDate : newDate;
+                              if (newDate.isBefore(minDate)) {
+                                tempDate = minDate;
+                              } else if (newDate.isAfter(maxDate)) {
+                                tempDate = maxDate;
+                              } else {
+                                tempDate = newDate;
+                              }
                             });
                           },
-                        ),
+                        )
+                        ,
                       ),
                       SizedBox(height: 10.h),
                       GestureDetector(

@@ -42,7 +42,7 @@ class MakeShiftRequestController extends GetxController {
   var selectedEndDate = Rxn<DateTime>();
   var selectedService = ''.obs;
   var selectedRecurringShiftType = 'days'.obs;
-
+  var twoDaysShift = false.obs;
   var isRecurringShift = false.obs;
   var isDayBasedRecurrence = true.obs;
   var clientCaseManagers = {}.obs;
