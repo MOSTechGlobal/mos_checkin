@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mos_checkin/utils/common_widgets/common_textfield.dart';
 
 import '../../shimmers/shimmer_profile_section.dart';
 import '../../utils/common_widgets/common_app_bar.dart';
@@ -243,101 +244,27 @@ class MyAccountView extends GetView<AccountController> {
                         ],
                       ),
                       const SizedBox(height: 10),
-                      Container(
-                        width: double.infinity,
-                        height: 64.h,
-                        decoration: BoxDecoration(
-                          color: colorScheme.onPrimary,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: colorScheme.outlineVariant,
-                              blurRadius: 12,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Center(
-                          child: TextField(
-                            controller: controller.emailController,
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
-                              labelText: 'Email',
-                              labelStyle: TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14,
-                                color: colorScheme.outline,
-                              ),
-                            ),
-                            style: TextStyle(color: colorScheme.onSurface),
-                          ),
-                        ),
+                      CommonTextField(
+                        hintText: 'Email',
+                        controller: controller.emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        label: 'Email',
                       ),
                       const SizedBox(height: 10),
-                      Container(
-                        width: double.infinity,
-                        height: 64.h,
-                        decoration: BoxDecoration(
-                          color: colorScheme.onPrimary,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: colorScheme.outlineVariant,
-                              blurRadius: 12,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Center(
-                          child: TextField(
-                            controller: controller.phoneController,
-                            keyboardType: TextInputType.phone,
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
-                              labelText: 'Phone Number',
-                              labelStyle: TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14,
-                                color: colorScheme.outline,
-                              ),
-                            ),
-                            style: TextStyle(color: colorScheme.onSurface),
-                          ),
-                        ),
+                      CommonTextField(
+                        hintText: 'Phone Number',
+                        controller: controller.phoneController,
+                        keyboardType: TextInputType.phone,
+                        label: 'Phone Number',
                       ),
                       const SizedBox(height: 20),
-                      Obx((){return GestureDetector(
-                        onTap: () async {
-                          await controller.editProfile(context);
+                      CommonButton(
+                        text: 'Save',
+                        onPressed: () {
+                          controller.editProfile(context);
                         },
-                        child:controller.isLoading.value? CircularProgressIndicator(): Container(
-                          height: 50.h,
-                          decoration: BoxDecoration(
-                            color: colorScheme.primary,
-                            borderRadius: BorderRadius.circular(12.r),
-                            boxShadow: [
-                              BoxShadow(
-                                color: colorScheme.outlineVariant,
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Center(
-                              child: Text(
-                                'Save',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: colorScheme.onPrimary),
-                              )),
-                        ),
-                      );}),
+                        isSaving: controller.isLoading.value,
+                      ),
                       const SizedBox(height: 20),
                     ],
                   ),
