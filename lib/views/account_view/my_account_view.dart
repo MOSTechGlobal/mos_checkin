@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -247,12 +248,18 @@ class MyAccountView extends GetView<AccountController> {
                         controller: controller.phoneController,
                         keyboardType: TextInputType.phone,
                         label: 'Phone Number',
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(10),
+                        ],
                         validator: (value) {
-                          if (value== null) return 'Phone number is required';
-                          if (value.length > 10) return 'Phone number must be 10 digits';
+                          if (value == null || value.isEmpty) return 'Phone number is required';
+                          if (value.length < 10) return 'Phone number must be 10 digits';
                           return null;
                         },
                       ),
+
+
                       const SizedBox(height: 20),
                       CommonButton(
                         text: 'Save',

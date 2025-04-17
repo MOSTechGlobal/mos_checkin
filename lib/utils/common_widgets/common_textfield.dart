@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CommonTextField extends StatefulWidget {
@@ -14,6 +15,7 @@ class CommonTextField extends StatefulWidget {
   final bool? enabled;
   final bool isPassword;
   final double paddingVertical;
+  final List<TextInputFormatter>? inputFormatters; // <-- new
 
   const CommonTextField({
     super.key,
@@ -29,6 +31,7 @@ class CommonTextField extends StatefulWidget {
     this.enabled = true,
     this.isPassword = false,
     this.paddingVertical = 0.0,
+    this.inputFormatters, // <-- new
   });
 
   @override
@@ -52,10 +55,7 @@ class _CommonTextFieldState extends State<CommonTextField> {
               widget.label!,
               style: TextStyle(
                 fontSize: 14.sp,
-                color: Theme
-                    .of(context)
-                    .colorScheme
-                    .onSurface,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),
@@ -63,18 +63,11 @@ class _CommonTextFieldState extends State<CommonTextField> {
           padding: EdgeInsets.symmetric(vertical: widget.paddingVertical.h),
           height: 40.h,
           decoration: BoxDecoration(
-            color: widget.textFieldColor ??
-                Theme
-                    .of(context)
-                    .colorScheme
-                    .onPrimary,
+            color: widget.textFieldColor ?? Theme.of(context).colorScheme.onPrimary,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Theme
-                    .of(context)
-                    .colorScheme
-                    .shadow,
+                color: Theme.of(context).colorScheme.shadow,
                 blurRadius: 2,
                 offset: const Offset(0, 1),
               )
@@ -89,26 +82,20 @@ class _CommonTextFieldState extends State<CommonTextField> {
               textAlignVertical: TextAlignVertical.center,
               textAlign: TextAlign.left,
               obscureText: shouldObscure,
+              inputFormatters: widget.inputFormatters, // <-- added here
               decoration: InputDecoration(
-                contentPadding: widget.contentPadding ??
-                    EdgeInsets.symmetric(horizontal: 12.w),
+                contentPadding: widget.contentPadding ?? EdgeInsets.symmetric(horizontal: 12.w),
                 isDense: true,
                 border: InputBorder.none,
                 hintText: widget.hintText,
                 hintStyle: TextStyle(
-                  color: Theme
-                      .of(context)
-                      .colorScheme
-                      .onSurface
-                      .withOpacity(0.6),
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                   fontSize: 12.sp,
                 ),
                 suffixIcon: widget.isPassword
                     ? IconButton(
                   icon: Icon(
-                    showPassword
-                        ? Icons.visibility
-                        : Icons.visibility_off,
+                    showPassword ? Icons.visibility : Icons.visibility_off,
                     color: Colors.grey,
                   ),
                   onPressed: () {
@@ -120,10 +107,7 @@ class _CommonTextFieldState extends State<CommonTextField> {
                     : null,
               ),
               style: TextStyle(
-                color: Theme
-                    .of(context)
-                    .colorScheme
-                    .onSurface,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w500,
               ),
