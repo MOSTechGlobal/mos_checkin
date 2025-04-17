@@ -8,13 +8,14 @@ class CommonDatePicker extends FormField<DateTime> {
     super.key,
     DateTime? initialDate,
     required Function(DateTime) onDateChanged,
+    DateTime? maxDate,
     Color? pickerColor,
     required String hintText,
     String? label,
     EdgeInsets? contentPadding,
     bool? readOnly,
-    bool enabled = true, // Added enabled parameter
-    VoidCallback? onTapWhenDisabled, // Added callback for disabled tap
+    bool enabled = true,
+    VoidCallback? onTapWhenDisabled,
     super.validator,
   }) : super(
     initialValue: initialDate,
@@ -22,18 +23,21 @@ class CommonDatePicker extends FormField<DateTime> {
       void showDatePickerModal(BuildContext context) {
         if (readOnly == true || !enabled) return;
 
+        final rawInitial = state.value ?? initialDate ?? DateTime.now();
+        final minimumDate = initialDate ?? DateTime.now();
+        final effectiveInitialDate = rawInitial.isBefore(minimumDate)
+            ? minimumDate
+            : rawInitial;
+        final effectiveMaxDate = maxDate;
+
+        DateTime tempDate = effectiveInitialDate;
+
         showModalBottomSheet(
           context: context,
           isScrollControlled: true,
           builder: (BuildContext modalContext) {
-            DateTime rawInitial = state.value ?? initialDate ?? DateTime.now();
-            DateTime minimumDate = initialDate ?? DateTime.now();
-            DateTime tempDate = rawInitial.isBefore(minimumDate) ? minimumDate : rawInitial;
-            DateTime maximumDate = initialDate != null
-                ? initialDate.add(Duration(days: 1))
-                : DateTime.now().add(Duration(days: 1));
             return StatefulBuilder(
-              builder: (context, setState) {
+              builder: (context, setModalState) {
                 return Container(
                   height: 300.h,
                   padding: EdgeInsets.symmetric(
@@ -46,7 +50,9 @@ class CommonDatePicker extends FormField<DateTime> {
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onSurface,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface,
                         ),
                       ),
                       SizedBox(height: 10.h),
@@ -56,22 +62,20 @@ class CommonDatePicker extends FormField<DateTime> {
                           mode: CupertinoDatePickerMode.date,
                           initialDateTime: tempDate,
                           minimumDate: minimumDate,
-                          maximumDate: maximumDate,
+                          maximumDate: effectiveMaxDate,
                           onDateTimeChanged: (DateTime newDate) {
-                            final DateTime minDate = minimumDate;
-                            final DateTime maxDate = maximumDate;
-                            setState(() {
-                              if (newDate.isBefore(minDate)) {
-                                tempDate = minDate;
-                              } else if (newDate.isAfter(maxDate)) {
-                                tempDate = maxDate;
+                            setModalState(() {
+                              if (newDate.isBefore(minimumDate)) {
+                                tempDate = minimumDate;
+                              } else if (effectiveMaxDate != null &&
+                                  newDate.isAfter(effectiveMaxDate)) {
+                                tempDate = effectiveMaxDate;
                               } else {
                                 tempDate = newDate;
                               }
                             });
                           },
-                        )
-                        ,
+                        ),
                       ),
                       SizedBox(height: 10.h),
                       GestureDetector(
@@ -84,7 +88,9 @@ class CommonDatePicker extends FormField<DateTime> {
                           height: 40.h,
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary,
                             borderRadius: BorderRadius.circular(12.r),
                             boxShadow: [
                               BoxShadow(
@@ -134,26 +140,28 @@ class CommonDatePicker extends FormField<DateTime> {
                 label,
                 style: TextStyle(
                   fontSize: 14.sp,
-                  color: Theme.of(state.context).colorScheme.onSurface,
+                  color: Theme.of(state.context)
+                      .colorScheme
+                      .onSurface,
                 ),
               ),
             ),
           GestureDetector(
             onTap: enabled
                 ? () => showDatePickerModal(state.context)
-                : onTapWhenDisabled, // Use callback when disabled
+                : onTapWhenDisabled,
             child: Container(
               height: 40.h,
               decoration: BoxDecoration(
                 color: pickerColor ??
                     Theme.of(state.context).colorScheme.onPrimary,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
                   BoxShadow(
                     color: Theme.of(state.context).colorScheme.shadow,
                     blurRadius: 2,
                     offset: const Offset(0, 1),
-                  )
+                  ),
                 ],
               ),
               child: Padding(
@@ -174,8 +182,9 @@ class CommonDatePicker extends FormField<DateTime> {
                             : Theme.of(state.context)
                             .colorScheme
                             .onSurface
-                            .withOpacity(enabled ? 0.6 : 0.3), // Adjust opacity when disabled
-                        fontSize: state.value != null ? 14.sp : 12.sp,
+                            .withOpacity(enabled ? 0.6 : 0.3),
+                        fontSize:
+                        state.value != null ? 14.sp : 12.sp,
                       ),
                     ),
                     Icon(
@@ -184,7 +193,7 @@ class CommonDatePicker extends FormField<DateTime> {
                       color: Theme.of(state.context)
                           .colorScheme
                           .onSurface
-                          .withOpacity(enabled ? 0.6 : 0.3), // Adjust opacity when disabled
+                          .withOpacity(enabled ? 0.6 : 0.3),
                     ),
                   ],
                 ),
@@ -197,7 +206,8 @@ class CommonDatePicker extends FormField<DateTime> {
               child: Text(
                 state.errorText!,
                 style: TextStyle(
-                  color: Theme.of(state.context).colorScheme.error,
+                  color:
+                  Theme.of(state.context).colorScheme.error,
                   fontSize: 12.sp,
                 ),
               ),

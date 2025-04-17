@@ -96,34 +96,19 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
         ),
         SizedBox(height: 10.h),
         CommonDatePicker(
-          key: ValueKey(controller.twoDaysShift.value
-              ? controller.selectedEndDate.value
-              : controller.selectedStartDate.value),
+          key: ValueKey(
+            controller.twoDaysShift.value
+                ? controller.selectedEndDate.value
+                : controller.selectedStartDate.value,
+          ),
           initialDate: controller.twoDaysShift.value
               ? controller.selectedEndDate.value
               : controller.selectedStartDate.value,
+          maxDate: controller.selectedStartDate.value?.add(Duration(days: 1)), // <- pass maxDate here
           onDateChanged: (pickedDate) {
-            if (!controller.twoDaysShift.value) {
-              controller.selectedEndDate.value =
-                  controller.selectedStartDate.value;
-              return;
-            }
-
-            final startDate = controller.selectedStartDate.value!;
-            final maxDate = startDate.add(Duration(days: 1));
-
-            if (pickedDate.isAfter(startDate) && !pickedDate.isAfter(maxDate)) {
-              controller.selectedEndDate.value = pickedDate;
-              controller.endDateController.value =
-                  DateFormat('dd-MM-yyyy').format(pickedDate);
-            } else {
-              Get.snackbar(
-                'Invalid Date',
-                'End date must be within 2 days after start date',
-                colorText: colorScheme.onPrimary,
-                backgroundColor: colorScheme.error,
-              );
-            }
+            controller.selectedEndDate.value = pickedDate;
+            controller.endDateController.value =
+                DateFormat('dd-MM-yyyy').format(pickedDate);
           },
           hintText: 'Select end date',
           label: 'Choose end date and time',
@@ -132,21 +117,23 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
               controller.startTimeController.value.isNotEmpty,
           onTapWhenDisabled: () {
             if (!controller.twoDaysShift.value) {
+              // Optional snackbar
             } else {
               Get.snackbar(
                 'Attention',
                 controller.selectedStartDate.value == null &&
-                        controller.startTimeController.value.isEmpty
+                    controller.startTimeController.value.isEmpty
                     ? 'Please select both start date and start time first'
                     : controller.selectedStartDate.value == null
-                        ? 'Please select a start date first'
-                        : 'Please select a start time first',
+                    ? 'Please select a start date first'
+                    : 'Please select a start time first',
                 colorText: colorScheme.onPrimary,
                 backgroundColor: colorScheme.error,
               );
             }
           },
         ),
+
         SizedBox(height: 10.h),
         CommonTimePicker(
           key: ValueKey(controller.startTimeController.value),
