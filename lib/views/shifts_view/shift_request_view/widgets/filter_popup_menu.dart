@@ -94,7 +94,7 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
     return Material(
       color: Colors.transparent,
       child: Container(
-        width: screenWidth * 0.55,
+        width: screenWidth * 0.62,
         decoration: BoxDecoration(
           color: colorScheme.surface.withOpacity(0.98),
           borderRadius: BorderRadius.circular(16.r),
@@ -131,7 +131,6 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
               colorScheme,
               'all',
               Icons.filter_list_rounded,
-              colorScheme.primary,
             ),
             _buildMenuItem(
               context,
@@ -144,7 +143,6 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
               colorScheme,
               'A',
               Icons.check_circle_rounded,
-              Colors.green,
             ),
             _buildMenuItem(
               context,
@@ -157,7 +155,6 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
               colorScheme,
               'P',
               Icons.pending_rounded,
-              Colors.amber,
             ),
             _buildMenuItem(
               context,
@@ -170,7 +167,6 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
               colorScheme,
               'R',
               Icons.cancel_rounded,
-              Colors.red,
             ),
 
           ],
@@ -236,7 +232,6 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
       ColorScheme colorScheme,
       String statusCode,
       IconData icon,
-      Color iconColor,
       ) {
     final isSelected = controller.selectedStatus.value.toLowerCase() ==
         statusCode.toLowerCase();
@@ -265,7 +260,7 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
                   Icon(
                     icon,
                     size: 20.sp,
-                    color: isSelected ? colorScheme.primary : iconColor.withOpacity(0.7),
+                    color: isSelected ? colorScheme.primary : colorScheme.outline,
                   ),
                   SizedBox(width: 12.w),
                   Text(
@@ -275,7 +270,7 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                       color: isSelected
                           ? colorScheme.primary
-                          : colorScheme.onSurface,
+                          : colorScheme.outline,
                     ),
                   ),
                   if (isSelected) ...[

@@ -92,7 +92,7 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
     return Material(
       color: Colors.transparent,
       child: Container(
-        width: screenWidth * 0.55,
+        width: screenWidth * 0.62,
         decoration: BoxDecoration(
           color: colorScheme.surface.withOpacity(0.98),
           borderRadius: BorderRadius.circular(16.r),
@@ -129,7 +129,6 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
               colorScheme,
               'all',
               Icons.filter_list_rounded,
-              colorScheme.primary,
             )),
             Obx(() => _buildMenuItem(
               context,
@@ -142,7 +141,6 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
               colorScheme,
               'pending',
               Icons.pending_rounded,
-              Colors.amber,
             )),
             Obx(() => _buildMenuItem(
               context,
@@ -155,7 +153,6 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
               colorScheme,
               'completed',
               Icons.check_circle_rounded,
-              Colors.green,
             )),
           ],
         ),
@@ -220,7 +217,6 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
       ColorScheme colorScheme,
       String statusCode,
       IconData icon,
-      Color iconColor,
       ) {
     // Directly compare with the controller's value to determine if selected
     final isSelected = controller.selectedStatus.value == statusCode;
@@ -251,7 +247,7 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
                     size: 20.sp,
                     color: isSelected
                         ? colorScheme.primary
-                        : iconColor.withOpacity(0.7),
+                        : colorScheme.outline
                   ),
                   SizedBox(width: 12.w),
                   Text(
@@ -261,7 +257,7 @@ class _FilterPopupMenuState extends State<FilterPopupMenu>
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                       color: isSelected
                           ? colorScheme.primary
-                          : colorScheme.onSurface,
+                          : colorScheme.outline,
                     ),
                   ),
                   if (isSelected) ...[
