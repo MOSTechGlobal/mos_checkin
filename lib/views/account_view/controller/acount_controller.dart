@@ -197,20 +197,20 @@ class AccountController extends GetxController {
         clientData['Phone'] = phoneController.text;
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully!')),
+          const SnackBar(content: Text('Profile updated successfully!'),backgroundColor: Colors.green,),
         );
 
         // Close the bottom sheet
         Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(res['message'] ?? 'Error updating profile')),
+          SnackBar(content: Text(res['message'] ?? 'Error updating profile'),backgroundColor: Theme.of(context).colorScheme.error,),
         );
       }
     } catch (e) {
       log('Error editing profile: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error updating profile')),
+         SnackBar(content: Text('Error updating profile'),backgroundColor: Theme.of(context).colorScheme.error,),
       );
     }finally{
       isLoading.value = false;

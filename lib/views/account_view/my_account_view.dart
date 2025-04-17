@@ -9,7 +9,6 @@ import 'package:mos_checkin/utils/common_widgets/common_textfield.dart';
 import '../../shimmers/shimmer_profile_section.dart';
 import '../../utils/common_widgets/common_app_bar.dart';
 import '../../utils/common_widgets/common_button.dart';
-import '../../utils/prefs.dart';
 import 'controller/acount_controller.dart';
 
 class MyAccountView extends GetView<AccountController> {
@@ -32,41 +31,27 @@ class MyAccountView extends GetView<AccountController> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        ElevatedButton(
-                            style: ElevatedButton.styleFrom(
+                        SizedBox(
+                            width: 150.w,
+                            child: CommonButton(
                               backgroundColor: colorScheme.error,
-                              fixedSize: const Size(100, 30),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: Container(
-                              child: Text(
-                                'Close',
-                                style: TextStyle(color: colorScheme.onPrimary),
-                              ),
+                              text: 'Close',
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
                             )),
-                        ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                              fixedSize: const Size(100, 30),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
+
+                        SizedBox(
+                          width: 150.w,
+                          child: CommonButton(
+                            backgroundColor: Colors.green,
+                            text: 'Save',
                             onPressed: () {
                               controller.uploadPFP(image0!);
                               Get.back();
                             },
-                            child: Container(
-                              child: Text(
-                                'Save',
-                                style: TextStyle(color: colorScheme.onPrimary),
-                              ),
-                            )),
+                          ),
+                        )
                       ],
                     ),
                     SizedBox(height: 10.h),
@@ -249,6 +234,12 @@ class MyAccountView extends GetView<AccountController> {
                         controller: controller.emailController,
                         keyboardType: TextInputType.emailAddress,
                         label: 'Email',
+                        validator: (value) {
+                          final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                          if (value== null) return 'Email is required';
+                          if (!emailRegex.hasMatch(value)) return 'Enter a valid email';
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 10),
                       CommonTextField(
@@ -256,6 +247,11 @@ class MyAccountView extends GetView<AccountController> {
                         controller: controller.phoneController,
                         keyboardType: TextInputType.phone,
                         label: 'Phone Number',
+                        validator: (value) {
+                          if (value== null) return 'Phone number is required';
+                          if (value.length > 10) return 'Phone number must be 10 digits';
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 20),
                       CommonButton(
@@ -563,7 +559,7 @@ class MyAccountView extends GetView<AccountController> {
     return Column(
       children: [
         GestureDetector(
-          onTap: ()=>showProfileDialog(context, colorScheme),
+          onTap: () => showProfileDialog(context, colorScheme),
           child: Stack(
             children: [
               Container(

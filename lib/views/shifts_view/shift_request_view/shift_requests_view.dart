@@ -173,19 +173,26 @@ class ShiftRequestsView extends GetView<ShiftRequestViewController> {
     String service = shiftRequest['ServiceDescription'] ?? '';
     String recurrence = shiftRequest['RecurrenceSentence'] ?? '';
 
-    DateTime startTime = DateFormat('HH:mm:ss').parse(shiftStart);
-    DateTime endTime = DateFormat('HH:mm:ss').parse(shiftEnd);
-    int durationHours = endTime.difference(startTime).inHours;
-    String formattedStartTime = DateFormat('hh:mm aa').format(startTime);
-    String formattedEndTime = DateFormat('hh:mm aa').format(endTime);
+    // Combine date and time for proper duration calculation
+    DateTime startDateTime = DateFormat("yyyy-MM-dd HH:mm:ss").parse("$shiftStartDate $shiftStart");
+    DateTime endDateTime = DateFormat("yyyy-MM-dd HH:mm:ss").parse("$shiftEndDate $shiftEnd");
+
+    // Handle overnight shifts
+    if (endDateTime.isBefore(startDateTime)) {
+      endDateTime = endDateTime.add(const Duration(days: 1));
+    }
+
+    Duration shiftDuration = endDateTime.difference(startDateTime);
+    int durationHours = shiftDuration.inHours;
+    String formattedStartTime = DateFormat('hh:mm aa').format(startDateTime);
+    String formattedEndTime = DateFormat('hh:mm aa').format(endDateTime);
     String duration = "${durationHours}Hr";
 
-    // Status Colors
     Color statusColor = shiftStatus == 'P'
         ? const Color(0xFFFFC600)
         : shiftStatus == 'A'
-            ? colorScheme.secondary
-            : colorScheme.error;
+        ? colorScheme.secondary
+        : colorScheme.error;
 
     return GestureDetector(
       onTap: () {
@@ -217,7 +224,7 @@ class ShiftRequestsView extends GetView<ShiftRequestViewController> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Upper Part
+            // Header
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
               child: Row(
@@ -271,7 +278,7 @@ class ShiftRequestsView extends GetView<ShiftRequestViewController> {
                 ],
               ),
             ),
-            // Lower Part
+            // Details
             Container(
               width: double.infinity,
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
@@ -285,7 +292,7 @@ class ShiftRequestsView extends GetView<ShiftRequestViewController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Time Row
+                  // Time
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -306,8 +313,6 @@ class ShiftRequestsView extends GetView<ShiftRequestViewController> {
                               fontSize: 12.sp,
                               color: colorScheme.onSurface,
                             ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
                           ),
                           SizedBox(width: 10.w),
                           Text(
@@ -323,7 +328,7 @@ class ShiftRequestsView extends GetView<ShiftRequestViewController> {
                     ],
                   ),
                   SizedBox(height: 5.h),
-                  // Status Row
+                  // Status
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -339,21 +344,19 @@ class ShiftRequestsView extends GetView<ShiftRequestViewController> {
                         shiftStatus == 'P'
                             ? 'Pending'
                             : shiftStatus == 'A'
-                                ? 'Approved'
-                                : shiftStatus == 'R'
-                                    ? 'Rejected'
-                                    : 'Cancelled',
+                            ? 'Approved'
+                            : shiftStatus == 'R'
+                            ? 'Rejected'
+                            : 'Cancelled',
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: colorScheme.onSurface,
                         ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
                       ),
                     ],
                   ),
                   SizedBox(height: 5.h),
-                  // Recurrence Row
+                  // Recurrence
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -379,7 +382,7 @@ class ShiftRequestsView extends GetView<ShiftRequestViewController> {
                       ),
                     ],
                   ),
-                  // Reason Row (if applicable)
+                  // Reason
                   if (shiftStatus == 'C' || shiftStatus == 'R') ...[
                     SizedBox(height: 5.h),
                     Row(
@@ -407,7 +410,7 @@ class ShiftRequestsView extends GetView<ShiftRequestViewController> {
                         ),
                       ],
                     ),
-                  ],
+                  ]
                 ],
               ),
             ),
@@ -416,6 +419,7 @@ class ShiftRequestsView extends GetView<ShiftRequestViewController> {
       ),
     );
   }
+
 
   void _deleteShiftRequestDialog(shiftRequest, BuildContext context) {
     if (shiftRequest['Status'] == 'A') {
