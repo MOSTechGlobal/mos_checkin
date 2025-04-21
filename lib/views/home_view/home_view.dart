@@ -6,6 +6,7 @@ import 'package:mos_checkin/views/home_view/widgets/menu_popup.dart';
 import 'package:mos_checkin/views/home_view/widgets/today_shift_container.dart';
 import 'package:mos_checkin/views/home_view/widgets/weather_widget.dart';
 
+import '../../routes/app_routes.dart';
 import '../../utils/common_widgets/common_button.dart';
 import '../../utils/common_widgets/common_dialog.dart';
 import 'controller/home_controller.dart';
@@ -66,8 +67,7 @@ class HomeView extends GetView<HomeController> {
                                 borderRadius: BorderRadius.circular(15.r),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: colorScheme.shadow
-                                        .withOpacity(0.15),
+                                    color: colorScheme.shadow.withOpacity(0.15),
                                     blurRadius: 4,
                                     offset: const Offset(0, 2),
                                   ),
@@ -76,8 +76,8 @@ class HomeView extends GetView<HomeController> {
                               child: Column(
                                 children: [
                                   Padding(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: 10.w),
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 10.w),
                                     child: Row(
                                       children: [
                                         _buildRoundIcon(
@@ -85,8 +85,7 @@ class HomeView extends GetView<HomeController> {
                                           'assets/icons/calendar.png',
                                           size: 14.sp,
                                           padding: 8.sp,
-                                          backgroundColor: colorScheme
-                                              .primary
+                                          backgroundColor: colorScheme.primary
                                               .withOpacity(0.15),
                                         ),
                                         SizedBox(width: 10.w),
@@ -100,6 +99,29 @@ class HomeView extends GetView<HomeController> {
                                           ),
                                         ),
                                         const Spacer(),
+                                        GestureDetector(
+                                          onTap: () {
+                                            Get.toNamed(AppRoutes.shiftRequest);
+                                          },
+                                          child: Row(
+                                            children: [
+                                              Text(
+                                                "View All",
+                                                style: TextStyle(
+                                                  color: colorScheme.primary,
+                                                  fontSize: 12.sp,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                              SizedBox(width: 2.w),
+                                              Icon(
+                                                Icons.arrow_forward_ios,
+                                                size: 12.sp,
+                                                color: colorScheme.primary,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -128,12 +150,12 @@ class HomeView extends GetView<HomeController> {
 
   /// Builds the circular icon widget used in the header row.
   Widget _buildRoundIcon(
-      ColorScheme colorScheme,
-      String iconPath, {
-        double size = 18,
-        double padding = 7,
-        Color? backgroundColor,
-      }) {
+    ColorScheme colorScheme,
+    String iconPath, {
+    double size = 18,
+    double padding = 7,
+    Color? backgroundColor,
+  }) {
     return Container(
       padding: EdgeInsets.all(padding),
       decoration: BoxDecoration(

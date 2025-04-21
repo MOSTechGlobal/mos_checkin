@@ -16,6 +16,7 @@ import '../../../utils/upgrader_service.dart';
 class HomeController extends GetxController {
   String? userName;
   RxString firstName = ''.obs;
+  RxString userEmail = ''.obs;
 
   var shifts = <dynamic>[].obs;
   var services = <Map<String, dynamic>>[].obs;
@@ -39,7 +40,8 @@ class HomeController extends GetxController {
   @override
   Future<void> onInit() async {
     userName = await Prefs.getClientName();
-    log('User name: $userName');
+    final String? email = await Prefs.getEmail();
+    userEmail.value = email ?? '';
     clientID = await Prefs.getClientID();
     firstName.value = userName?.split(' ')[0] ?? 'Guest';
     await fetchClientShifts();

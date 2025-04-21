@@ -149,8 +149,8 @@ class _MenuPopupState extends State<MenuPopup>
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Obx(() => Text(
-                  homeController.firstName.value.isNotEmpty
-                      ? homeController.firstName.value
+                  homeController.userEmail.value.isNotEmpty
+                      ? homeController.userEmail.value
                       : '$user',
                   style: TextStyle(
                     fontSize: 12.sp,

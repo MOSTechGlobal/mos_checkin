@@ -68,6 +68,7 @@ class LoginController extends GetxController {
         {
           'email': email.value,
           'type': 'client',
+          'isMobileLogin': true,
         },
       );
 
