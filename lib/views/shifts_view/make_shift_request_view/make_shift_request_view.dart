@@ -1,5 +1,7 @@
 import 'dart:developer';
+import 'dart:ui';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -8,10 +10,6 @@ import 'package:mos_checkin/views/shifts_view/make_shift_request_view/widgets/se
 
 import '../../../utils/common_widgets/common_app_bar.dart';
 import '../../../utils/common_widgets/common_button.dart';
-import '../../../utils/common_widgets/common_date_picker.dart';
-import '../../../utils/common_widgets/common_dropdown.dart';
-import '../../../utils/common_widgets/common_textfield.dart';
-import '../../../utils/common_widgets/common_time_picker.dart';
 import 'controller/make_shift_request_controller.dart';
 
 class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
@@ -24,276 +22,797 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
     required this.clientName,
   });
 
-  Widget _buildBasicDetails(BuildContext context, ColorScheme colorScheme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Add Details",
-          style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 10.h),
-        CommonTextField(
-          label: 'First and Last Name',
-          hintText: 'First and Last Name',
-          readOnly: true,
-          controller: TextEditingController()..text = clientName,
-        ),
-        SizedBox(height: 10.h),
-        CommonDatePicker(
-          onDateChanged: (pickedDate) {
-            controller.selectedStartDate.value = pickedDate;
-            controller.startDateController.value =
-                DateFormat('dd-MM-yyyy').format(pickedDate);
-            controller.endDateController.value =
-                DateFormat('dd-MM-yyyy').format(pickedDate);
-            if (!controller.twoDaysShift.value) {
-              controller.selectedEndDate.value = pickedDate;
-            }
-          },
-          hintText: 'Select start date',
-          label: 'Choose start date and time',
-        ),
-        SizedBox(height: 10.h),
-        CommonTimePicker(
-          associatedDate: controller.selectedStartDate.value,
-          onTimeChanged: (pickedTime) {
-            final now = DateTime.now();
-            final selectedDateTime = DateTime(now.year, now.month, now.day,
-                pickedTime.hour, pickedTime.minute);
-            controller.startTimeController.value =
-                DateFormat('hh:mm aa').format(selectedDateTime);
-            // Automatically set end time to one hour later when twoDaysShift is false
-            if (!controller.twoDaysShift.value) {
-              final endDateTime = selectedDateTime.add(Duration(hours: 1));
-              controller.endTimeController.value =
-                  DateFormat('hh:mm aa').format(endDateTime);
-            }
-          },
-          hintText: 'Select start time',
-          enabled: controller.selectedStartDate.value != null,
-          onTapWhenDisabled: () {
-            Get.snackbar('Attention', 'Please select a start date first',
-                colorText: colorScheme.onPrimary,
-                backgroundColor: colorScheme.error);
-          },
-        ),
-        SizedBox(height: 10.h),
-        Row(
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Scaffold(
+      body: Column(
+        children: [
+          CommonAppBar(
+            title: 'Make Service Request',
+            iconPath: 'assets/icons/calendar.png',
+            colorScheme: colorScheme,
+          ),
+          SizedBox(height: 4.h),
+          Expanded(
+            child: Obx(() {
+              return SingleChildScrollView(
+                child: Center(child: _buildCard(context, colorScheme)),
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCard(BuildContext context, ColorScheme colorScheme) {
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.onPrimary,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow,
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      margin: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
+      padding: EdgeInsets.only(left: 10.w, right: 10.w, top: 15.h),
+      child: Column(
+        children: [
+          _buildFieldRow(
+            'Client',
+            clientName,
+            null, // Non-editable
+            isEditable: false,
+          ),
+          const Divider(),
+          _buildFieldRow(
+            'Start Date',
+            controller.startDateController.value.isNotEmpty
+                ? controller.startDateController.value
+                : 'Select',
+                () => _pickStartDate(context),
+          ),
+          const Divider(),
+          _buildFieldRow(
+            'Start Time',
+            controller.startTimeController.value.isNotEmpty
+                ? controller.startTimeController.value
+                : 'Select',
+                () => _pickStartTime(context),
+          ),
+          const Divider(),
+          _buildFieldRow(
+            'Two Days Shift',
+            controller.twoDaysShift.value ? 'Yes' : 'No',
+                () {
+              controller.twoDaysShift.value = !controller.twoDaysShift.value;
+              if (!controller.twoDaysShift.value &&
+                  controller.selectedStartDate.value != null) {
+                controller.selectedEndDate.value = controller.selectedStartDate.value;
+                controller.endDateController.value =
+                    controller.startDateController.value;
+                if (controller.startTimeController.value.isNotEmpty) {
+                  final startTime = DateFormat('hh:mm aa')
+                      .parse(controller.startTimeController.value);
+                  final endDateTime = startTime.add(const Duration(hours: 1));
+                  controller.endTimeController.value =
+                      DateFormat('hh:mm aa').format(endDateTime);
+                }
+              }
+            },
+          ),
+          const Divider(),
+          _buildFieldRow(
+            'End Date',
+            controller.endDateController.value.isNotEmpty
+                ? controller.endDateController.value
+                : 'Select',
+                () => _pickEndDate(context),
+            isEditable: controller.twoDaysShift.value &&
+                controller.selectedStartDate.value != null &&
+                controller.startTimeController.value.isNotEmpty,
+          ),
+          const Divider(),
+          _buildFieldRow(
+            'End Time',
+            controller.endTimeController.value.isNotEmpty
+                ? controller.endTimeController.value
+                : 'Select',
+                () => _pickEndTime(context),
+            isEditable: controller.selectedStartDate.value != null &&
+                controller.startTimeController.value.isNotEmpty &&
+                controller.selectedEndDate.value != null,
+          ),
+          const Divider(),
+          _buildFieldRow(
+            'Service',
+            controller.selectedService.value.isNotEmpty
+                ? controller.shiftServices.firstWhere(
+                  (service) =>
+              service['Service_Code'].toString() ==
+                  controller.selectedService.value,
+              orElse: () => {'Description': 'Service not found'},
+            )['Description']
+                : 'Select',
+                () => _showServicePicker(context),
+            isEditable: controller.selectedStartDate.value != null &&
+                controller.startTimeController.value.isNotEmpty &&
+                controller.selectedEndDate.value != null &&
+                controller.endTimeController.value.isNotEmpty,
+          ),
+          const Divider(),
+          _buildRecurringShiftRow(context, colorScheme),
+          const Divider(),
+          _buildActionButtons(context, colorScheme),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFieldRow(String label, String value, VoidCallback? onTap,
+      {bool isEditable = true}) {
+    return InkWell(
+      onTap: isEditable
+          ? onTap
+          : () {
+        if (onTap == null) return;
+        String message;
+        switch (label) {
+          case 'End Date':
+            message = 'Please enable Two Days Shift to edit End Date';
+            break;
+          case 'End Time':
+            message =
+            'Please select Start Date, Start Time, and End Date first';
+            break;
+          case 'Service':
+            message =
+            'Please select Start Date, Start Time, End Date, and End Time first';
+            break;
+          default:
+            message = 'This field is not editable';
+        }
+        Get.snackbar(
+          'Attention',
+          message,
+          backgroundColor: Theme.of(Get.context!).colorScheme.error,
+          colorText: Theme.of(Get.context!).colorScheme.onPrimary,
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Obx(
-              () => Checkbox(
-                  value: controller.twoDaysShift.value,
-                  onChanged: (value) {
-                    controller.twoDaysShift.value = value!;
-                  }),
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
-            Text(
-              'Shift Occurs Over Two Days',
-              style: TextStyle(fontSize: 12.sp),
-            )
+            Expanded(
+              flex: 2,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: Text(
+                      value.isEmpty ? 'Select' : value,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(Get.context!).colorScheme.onSurface,
+                      ),
+                      textAlign: TextAlign.end,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: isEditable
+                        ? Theme.of(Get.context!).colorScheme.onSurface
+                        : Theme.of(Get.context!)
+                        .colorScheme
+                        .onSurface
+                        .withOpacity(0.6),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
-        SizedBox(height: 10.h),
-        CommonDatePicker(
-          key: ValueKey(
-            controller.twoDaysShift.value
-                ? controller.selectedEndDate.value
-                : controller.selectedStartDate.value,
-          ),
-          initialDate: controller.twoDaysShift.value
-              ? controller.selectedEndDate.value
-              : controller.selectedStartDate.value,
-          maxDate: controller.selectedStartDate.value?.add(Duration(days: 1)), // <- pass maxDate here
-          onDateChanged: (pickedDate) {
-            controller.selectedEndDate.value = pickedDate;
-            controller.endDateController.value =
-                DateFormat('dd-MM-yyyy').format(pickedDate);
-          },
-          hintText: 'Select end date',
-          label: 'Choose end date and time',
-          enabled: controller.twoDaysShift.value &&
-              controller.selectedStartDate.value != null &&
-              controller.startTimeController.value.isNotEmpty,
-          onTapWhenDisabled: () {
-            if (!controller.twoDaysShift.value) {
-              // Optional snackbar
-            } else {
-              Get.snackbar(
-                'Attention',
-                controller.selectedStartDate.value == null &&
-                    controller.startTimeController.value.isEmpty
-                    ? 'Please select both start date and start time first'
-                    : controller.selectedStartDate.value == null
-                    ? 'Please select a start date first'
-                    : 'Please select a start time first',
-                colorText: colorScheme.onPrimary,
-                backgroundColor: colorScheme.error,
-              );
-            }
-          },
-        ),
-
-        SizedBox(height: 10.h),
-        CommonTimePicker(
-          key: ValueKey(controller.startTimeController.value),
-          associatedDate: controller.selectedEndDate.value,
-          initialTime: controller.startTimeController.value.isNotEmpty
-              ? DateFormat('hh:mm aa')
-                  .parse(controller.startTimeController.value)
-                  .add(const Duration(hours: 1))
-              : null,
-          onTimeChanged: (pickedTime) {
-            final selectedDateTime = DateTime(pickedTime.year, pickedTime.month,
-                pickedTime.day, pickedTime.hour, pickedTime.minute);
-            if (!controller.twoDaysShift.value) {
-              // Set end time to one hour after start time
-              final startTime = DateFormat('hh:mm aa')
-                  .parse(controller.startTimeController.value);
-              final endDateTime = startTime.add(Duration(hours: 1));
-              controller.endTimeController.value =
-                  DateFormat('hh:mm aa').format(endDateTime);
-              return;
-            }
-            // For twoDaysShift true, use the picked time
-            controller.endTimeController.value =
-                DateFormat('hh:mm aa').format(selectedDateTime);
-          },
-          hintText: 'Select end time',
-          enabled: controller.selectedStartDate.value != null &&
-              controller.startTimeController.value.isNotEmpty &&
-              controller.selectedEndDate.value != null,
-          onTapWhenDisabled: () {
-            Get.snackbar(
-              'Attention',
-              controller.selectedStartDate.value == null
-                  ? 'Please select a start date first'
-                  : controller.startTimeController.value.isEmpty
-                      ? 'Please select a start time first'
-                      : 'Please select an end date first',
-              colorText: colorScheme.onPrimary,
-              backgroundColor: colorScheme.error,
-            );
-          },
-        ),
-        SizedBox(height: 10.h),
-        _buildServicePicker(context, colorScheme),
-      ],
+      ),
     );
   }
 
-  Widget _buildServicePicker(BuildContext context, ColorScheme colorScheme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-          child: Text(
-            'Choose a service',
-            style: TextStyle(fontSize: 14.sp, color: colorScheme.onSurface),
-          ),
-        ),
-        GestureDetector(
-          onTap: (controller.selectedStartDate.value != null &&
-                  controller.startTimeController.value.isNotEmpty &&
-                  controller.selectedEndDate.value != null &&
-                  controller.endTimeController.value.isNotEmpty)
-              ? () => _showServicePicker(context)
-              : () {
-                  log(controller.selectedStartDate.value.toString());
-                  log(controller.selectedEndDate.value.toString());
-                  log(controller.startTimeController.value.toString());
-                  log(controller.endTimeController.value.toString());
-                  Get.snackbar(
-                    'Attention',
-                    controller.selectedStartDate.value == null
-                        ? 'Please select a start date first'
-                        : controller.startTimeController.value.isEmpty
-                            ? 'Please select a start time first'
-                            : controller.endDateController.value.isEmpty
-                                ? 'Please select an end date first'
-                                : 'Please select end time first',
-                    colorText: colorScheme.onPrimary,
-                    backgroundColor: colorScheme.error,
-                  );
-                },
-          child: Container(
-            padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 10.w),
-            decoration: BoxDecoration(
-              color: colorScheme.onPrimary,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Theme.of(context).colorScheme.shadow,
-                  blurRadius: 2,
-                  offset: const Offset(0, 1),
+  Widget _buildRecurringShiftRow(
+      BuildContext context, ColorScheme colorScheme) {
+    return Obx(() => Column(
+          children: [
+            _buildFieldRow(
+              'Recurring Shift',
+              controller.isRecurringShift.value ? 'Yes' : 'No',
+              () {
+                controller.isRecurringShift.value =
+                    !controller.isRecurringShift.value;
+                if (!controller.isRecurringShift.value) {
+                  controller.selectedRecurringShiftType.value = '';
+                  controller.repeatEveryController.text = '';
+                }
+              },
+            ),
+            if (controller.isRecurringShift.value) ...[
+              const Divider(),
+              _buildFieldRow(
+                'Repeat Every',
+                controller.selectedRecurringShiftType.value.isNotEmpty
+                    ? controller.selectedRecurringShiftType.value == 'days'
+                    ? controller.repeatEveryControllerText.value.isNotEmpty
+                    ? '${controller.repeatEveryControllerText.value} days'
+                    : 'Select number of days'
+                    : controller.selectedRecurringShiftType.value.capitalizeFirst!
+                    : 'Select',
+                    () => _showRecurringDialog(context, colorScheme),
+              ),
+              if (controller.selectedRecurringShiftType.value == 'weeks') ...[
+                const Divider(),
+                _buildFieldRow(
+                  'Week Days',
+                  controller.selectedWeekDays.entries
+                          .where((entry) => entry.value.value)
+                          .map((entry) => entry.key)
+                          .join(', ')
+                          .isNotEmpty
+                      ? controller.selectedWeekDays.entries
+                          .where((entry) => entry.value.value)
+                          .map((entry) => entry.key)
+                          .join(', ')
+                      : 'Select',
+                  () => _showWeekDaysDialog(context, colorScheme),
                 ),
               ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    controller.selectedService.value.isNotEmpty
-                        ? controller.shiftServices.firstWhere(
-                            (service) =>
-                                service['Service_Code'].toString() ==
-                                controller.selectedService.value,
-                            orElse: () => {'Description': 'Service not found'},
-                          )['Description']
-                        : 'Select Service',
-                    style: TextStyle(
-                      color: controller.selectedService.value.isEmpty
-                          ? colorScheme.onSurface.withOpacity(0.6)
-                          : colorScheme.onSurface,
-                      fontSize: controller.selectedService.value.isNotEmpty
-                          ? 14.sp
-                          : 12.sp,
+              if (controller.selectedRecurringShiftType.value == 'months') ...[
+                const Divider(),
+                _buildFieldRow(
+                  'Monthly Recurrence',
+                  controller.isDayBasedRecurrence.value
+                      ? 'On day ${controller.mDayControllerText.value}'
+                      : 'On the ${controller.selectedOccurance.value} ${controller.selectedWeekDay.value}',
+                  () => _showMonthlyRecurrenceDialog(context, colorScheme),
+                ),
+              ],
+            ],
+          ],
+        ));
+  }
+
+  Widget _buildActionButtons(BuildContext context, ColorScheme colorScheme) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 14.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildButton(
+            label: controller.isSubmitting.value ? 'Saving...' : 'Save',
+            onTap: controller.isSubmitting.value ||
+                    controller.selectedService.value.isEmpty
+                ? null
+                : () => controller.extractData(context, colorScheme),
+            color: colorScheme.primary,
+            isLoading: controller.isSubmitting.value,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildButton({
+    required String label,
+    required VoidCallback? onTap,
+    required Color color,
+    bool isLoading = false,
+  }) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          margin: EdgeInsets.symmetric(horizontal: 10.w),
+          padding: EdgeInsets.symmetric(vertical: 12.h),
+          decoration: BoxDecoration(
+            color: onTap == null ? Colors.grey : color,
+            borderRadius: BorderRadius.circular(8.0),
+            boxShadow: isLoading
+                ? []
+                : [
+                    BoxShadow(
+                      color: color.withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
-                    maxLines: null,
+                  ],
+          ),
+          child: Center(
+            child: isLoading
+                ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: Theme.of(Get.context!).colorScheme.onPrimary,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : Text(
+                    label,
+                    style: TextStyle(
+                      color: Theme.of(Get.context!).colorScheme.onPrimary,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickStartDate(BuildContext context) async {
+    final initialDate = controller.selectedStartDate.value ?? DateTime.now();
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(20),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.onPrimary,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Select Start Date',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(dialogContext),
+                      child: Container(
+                        width: 25.w,
+                        height: 25.h,
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.error,
+                            width: 2,
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.close,
+                          color: Theme.of(context).colorScheme.error,
+                          size: 16.sp,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                Container(
-                  width: 16.w,
-                  height: 16.h,
-                  decoration: BoxDecoration(
-                    color: colorScheme.onSurface,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.arrow_drop_down,
-                    color: Colors.white,
-                    size: 16.sp,
+                SizedBox(height: 16.h),
+                SizedBox(
+                  height: 300.h,
+                  child: CalendarDatePicker(
+                    initialDate: initialDate,
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime.now().add(const Duration(days: 365)),
+                    onDateChanged: (picked) {
+                      controller.selectedStartDate.value = picked;
+                      controller.startDateController.value =
+                          DateFormat('dd-MM-yyyy').format(picked);
+                      // Sync end date if not a two-day shift
+                      if (!controller.twoDaysShift.value) {
+                        controller.selectedEndDate.value = picked;
+                        controller.endDateController.value =
+                            DateFormat('dd-MM-yyyy').format(picked);
+                      }
+                      Navigator.pop(dialogContext);
+                    },
                   ),
                 ),
               ],
             ),
           ),
-        )
-      ],
+        ),
+      ),
     );
   }
 
-  void _showServicePicker(BuildContext context) async {
-    final controller = Get.find<MakeShiftRequestController>();
+  Future<void> _pickEndDate(BuildContext context) async {
+    if (!controller.twoDaysShift.value ||
+        controller.selectedStartDate.value == null ||
+        controller.startTimeController.value.isEmpty) {
+      Get.snackbar(
+        'Attention',
+        controller.twoDaysShift.value
+            ? controller.selectedStartDate.value == null &&
+            controller.startTimeController.value.isEmpty
+            ? 'Please select both Start Date and Start Time first'
+            : controller.selectedStartDate.value == null
+            ? 'Please select a Start Date first'
+            : 'Please select a Start Time first'
+            : 'Please enable Two Days Shift to edit End Date',
+        backgroundColor: Theme.of(context).colorScheme.error,
+        colorText: Theme.of(context).colorScheme.onPrimary,
+      );
+      return;
+    }
+
+    final initialDate =
+        controller.selectedEndDate.value ?? controller.selectedStartDate.value!;
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(20),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.onPrimary,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Select End Date',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(dialogContext),
+                      child: Container(
+                        width: 25.w,
+                        height: 25.h,
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.error,
+                            width: 2,
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.close,
+                          color: Theme.of(context).colorScheme.error,
+                          size: 16.sp,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+                SizedBox(
+                  height: 300.h,
+                  child: CalendarDatePicker(
+                    initialDate: initialDate,
+                    firstDate: controller.selectedStartDate.value!,
+                    lastDate:
+                    controller.selectedStartDate.value!.add(Duration(days: 1)),
+                    onDateChanged: (picked) {
+                      controller.selectedEndDate.value = picked;
+                      controller.endDateController.value =
+                          DateFormat('dd-MM-yyyy').format(picked);
+                      Navigator.pop(dialogContext);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickStartTime(BuildContext context) async {
+    if (controller.selectedStartDate.value == null) {
+      Get.snackbar(
+        'Attention',
+        'Please select a start date first',
+        backgroundColor: Theme.of(context).colorScheme.error,
+        colorText: Theme.of(context).colorScheme.onPrimary,
+      );
+      return;
+    }
+
+    final initialTime = controller.startTimeController.value.isNotEmpty
+        ? DateFormat('hh:mm aa').parse(controller.startTimeController.value)
+        : DateTime.now();
+    TimeOfDay? selectedTime = TimeOfDay.fromDateTime(initialTime);
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(20),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.onPrimary,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Select Start Time',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(dialogContext),
+                      child: Container(
+                        width: 25.w,
+                        height: 25.h,
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.error,
+                            width: 2,
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.close,
+                          color: Theme.of(context).colorScheme.error,
+                          size: 16.sp,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+                SizedBox(
+                  height: 200.h,
+                  child: CupertinoDatePicker(
+                    mode: CupertinoDatePickerMode.time,
+                    initialDateTime: initialTime,
+                    onDateTimeChanged: (DateTime newDateTime) {
+                      selectedTime = TimeOfDay.fromDateTime(newDateTime);
+                    },
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                GestureDetector(
+                  onTap: () {
+                    if (selectedTime != null) {
+                      final selectedDateTime = DateTime(
+                        DateTime.now().year,
+                        DateTime.now().month,
+                        DateTime.now().day,
+                        selectedTime!.hour,
+                        selectedTime!.minute,
+                      );
+                      controller.startTimeController.value =
+                          DateFormat('hh:mm aa').format(selectedDateTime);
+                      if (!controller.twoDaysShift.value) {
+                        final endDateTime =
+                        selectedDateTime.add(const Duration(hours: 1));
+                        controller.endTimeController.value =
+                            DateFormat('hh:mm aa').format(endDateTime);
+                      }
+                      Navigator.pop(dialogContext);
+                    }
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    height: 40.h,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Save',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14.sp,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickEndTime(BuildContext context) async {
+    if (controller.selectedStartDate.value == null ||
+        controller.startTimeController.value.isEmpty ||
+        controller.selectedEndDate.value == null) {
+      Get.snackbar(
+        'Attention',
+        controller.selectedStartDate.value == null
+            ? 'Please select a Start Date first'
+            : controller.startTimeController.value.isEmpty
+            ? 'Please select a Start Time first'
+            : 'Please select an End Date first',
+        backgroundColor: Theme.of(context).colorScheme.error,
+        colorText: Theme.of(context).colorScheme.onPrimary,
+      );
+      return;
+    }
+
+    final initialTime = controller.endTimeController.value.isNotEmpty
+        ? DateFormat('hh:mm aa').parse(controller.endTimeController.value)
+        : (controller.startTimeController.value.isNotEmpty
+        ? DateFormat('hh:mm aa')
+        .parse(controller.startTimeController.value)
+        .add(const Duration(hours: 1))
+        : DateTime.now());
+    TimeOfDay? selectedTime = TimeOfDay.fromDateTime(initialTime);
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(20),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.onPrimary,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Select End Time',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(dialogContext),
+                      child: Container(
+                        width: 25.w,
+                        height: 25.h,
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.error,
+                            width: 2,
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.close,
+                          color: Theme.of(context).colorScheme.error,
+                          size: 16.sp,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+                SizedBox(
+                  height: 200.h,
+                  child: CupertinoDatePicker(
+                    mode: CupertinoDatePickerMode.time,
+                    initialDateTime: initialTime,
+                    onDateTimeChanged: (DateTime newDateTime) {
+                      selectedTime = TimeOfDay.fromDateTime(newDateTime);
+                    },
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                GestureDetector(
+                  onTap: () {
+                    if (selectedTime != null) {
+                      final selectedDateTime = DateTime(
+                        DateTime.now().year,
+                        DateTime.now().month,
+                        DateTime.now().day,
+                        selectedTime!.hour,
+                        selectedTime!.minute,
+                      );
+                      controller.endTimeController.value =
+                          DateFormat('hh:mm aa').format(selectedDateTime);
+                      Navigator.pop(dialogContext);
+                    }
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    height: 40.h,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Save',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14.sp,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showServicePicker(BuildContext context) async {
     final colorScheme = Theme.of(context).colorScheme;
 
-    // Validate start date and time
     if (controller.selectedStartDate.value == null ||
-        controller.startTimeController.value.isEmpty) {
+        controller.startTimeController.value.isEmpty ||
+        controller.selectedEndDate.value == null ||
+        controller.endTimeController.value.isEmpty) {
       Get.snackbar(
         'Attention',
         controller.selectedStartDate.value == null
             ? 'Please select a start date first'
-            : 'Please select a start time first',
+            : controller.startTimeController.value.isEmpty
+                ? 'Please select a start time first'
+                : controller.endDateController.value.isEmpty
+                    ? 'Please select an end date first'
+                    : 'Please select end time first',
         colorText: colorScheme.onPrimary,
         backgroundColor: colorScheme.error,
       );
       return;
     }
 
-    // Open dialog immediately
     Get.dialog(
       Obx(() => ServiceModalView(
             allServices: controller.shiftServices.toSet(),
@@ -320,12 +839,10 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
               }
             },
           )),
-      barrierDismissible: false, // Prevent closing during loading
+      barrierDismissible: false,
     );
 
-    // Fetch services asynchronously
     try {
-      // Parse start date and time
       final startDate = controller.selectedStartDate.value!;
       final startTimeStr = controller.startTimeController.value;
       final timeFormat = DateFormat('hh:mm aa');
@@ -338,7 +855,6 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
         startTime.minute,
       );
 
-      // Calculate shift type
       await controller.calculateShiftType(
           startDateTime, startDateTime.add(Duration(hours: 1)));
       final shiftType = controller.shiftTypes.isNotEmpty
@@ -347,11 +863,10 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
       controller.shiftType.value = shiftType;
       log('Calculated Shift Type: $shiftType');
 
-      // Fetch shift services
       await controller.fetchShiftServices(clientId, shiftType);
     } catch (e) {
       log('Error in _showServicePicker: $e');
-      Get.back(); // Close dialog on error
+      Get.back();
       Get.snackbar(
         'Error',
         'Failed to load services',
@@ -361,437 +876,479 @@ class MakeShiftRequestView extends GetView<MakeShiftRequestController> {
     }
   }
 
-  Widget _buildMonthlyRecurrenceOptions(
-      BuildContext context, ColorScheme colorScheme) {
-    return Column(
-      children: [
-        Container(
-          padding: EdgeInsets.symmetric(vertical: 6.h, horizontal: 10.w),
-          decoration: BoxDecoration(
-            color: colorScheme.onPrimary,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Theme.of(context).colorScheme.shadow,
-                blurRadius: 2,
-                offset: const Offset(0, 1),
-              )
-            ],
-          ),
-          child: Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  controller.isDayBasedRecurrence.value = true;
-                },
-                child: Row(
+  Future<void> _showRecurringDialog(
+      BuildContext context, ColorScheme colorScheme) async {
+    final textController =
+        TextEditingController(text: controller.repeatEveryController.text);
+    final localRecurringType = RxString(
+        controller.selectedRecurringShiftType.value.isNotEmpty
+            ? controller.selectedRecurringShiftType.value
+            : 'days');
+
+    await showDialog(
+      context: context,
+      builder: (_) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(20),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: colorScheme.onPrimary,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Transform.scale(
-                      scale: 0.8,
-                      child: Radio(
-                        visualDensity:
-                            const VisualDensity(horizontal: -4, vertical: -4),
-                        value: true,
-                        groupValue: controller.isDayBasedRecurrence.value,
-                        onChanged: (value) {
-                          controller.isDayBasedRecurrence.value = value as bool;
-                        },
-                        activeColor: colorScheme.primary,
+                    Text(
+                      'Repeat Every',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(
-                      'On day',
-                      style: TextStyle(
-                          fontSize: 14.sp, color: colorScheme.onSurface),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        width: 25.w,
+                        height: 25.h,
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          border:
+                              Border.all(color: colorScheme.error, width: 2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.close,
+                          color: colorScheme.error,
+                          size: 16.sp,
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              ),
-              SizedBox(width: 10.w),
-              Flexible(
-                child: CommonTextField(
-                  controller: TextEditingController()
-                    ..text = controller.mDayControllerText.value,
-                  hintText: '1',
-                  keyboardType: TextInputType.number,
-                  enabled: controller.isDayBasedRecurrence.value,
-                  paddingVertical: 5,
-                  onChanged: (value) {
-                    if (value.isNotEmpty &&
-                        int.tryParse(value) != null &&
-                        int.parse(value) > 31) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Please enter a valid number between 1 and 31',
-                            style: TextStyle(
-                                fontSize: 14, color: colorScheme.onSecondary),
+                SizedBox(height: 16.h),
+                Obx(() => Row(
+                      children: [
+                        if (localRecurringType.value == 'days') ...[
+                          Expanded(
+                            child: TextField(
+                              controller: textController,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                hintText: 'Number',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide:
+                                      BorderSide(color: colorScheme.outline),
+                                ),
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 16.w,
+                                  vertical: 12.h,
+                                ),
+                              ),
+                              onChanged: (value) {
+                                if (value.isEmpty) {
+                                  textController.text = '';
+                                  return;
+                                }
+                                int? parsedValue = int.tryParse(value);
+                                if (parsedValue == null ||
+                                    parsedValue <= 0 ||
+                                    parsedValue > 99) {
+                                  Get.snackbar(
+                                    'Invalid input',
+                                    'Please enter a valid number between 1 and 99',
+                                    backgroundColor: colorScheme.error,
+                                    colorText: colorScheme.onPrimary,
+                                  );
+                                  textController.text = '1';
+                                  textController.selection =
+                                      TextSelection.fromPosition(
+                                    TextPosition(
+                                        offset: textController.text.length),
+                                  );
+                                }
+                              },
+                            ),
+                          ),
+                          SizedBox(width: 10.w),
+                        ],
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            value: localRecurringType.value,
+                            items: const <String>['days', 'weeks', 'months']
+                                .map((String value) => DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value.capitalize!),
+                                    ))
+                                .toList(),
+                            onChanged: (value) {
+                              localRecurringType.value = value!;
+                              if (value != 'days') {
+                                textController.text = '';
+                                controller.repeatEveryController.text = '';
+                              } else {
+                                textController.text = controller
+                                        .repeatEveryController.text.isNotEmpty
+                                    ? controller.repeatEveryController.text
+                                    : '1';
+                              }
+                            },
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide:
+                                    BorderSide(color: colorScheme.outline),
+                              ),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16.w,
+                                vertical: 12.h,
+                              ),
+                            ),
                           ),
                         ),
+                      ],
+                    )),
+                SizedBox(height: 16.h),
+                CommonButton(
+                  text: 'Save',
+                  onPressed: () {
+                    if (localRecurringType.value == 'days' &&
+                        (textController.text.isEmpty ||
+                            int.tryParse(textController.text) == null ||
+                            int.parse(textController.text) <= 0)) {
+                      Get.snackbar(
+                        'Invalid input',
+                        'Please enter a valid number of days between 1 and 99',
+                        backgroundColor: colorScheme.error,
+                        colorText: colorScheme.onPrimary,
                       );
-                      controller.mDayControllerText.value = '1';
-                    } else {
-                      controller.mDayControllerText.value = value;
+                      return;
                     }
+                    controller.repeatEveryController.text = textController.text;
+                    controller.repeatEveryControllerText.value = textController.text; // Update reactive variable
+                    controller.selectedRecurringShiftType.value = localRecurringType.value;
+                    log('Saved Recurring: ${textController.text}, ${localRecurringType.value}');
+                    Navigator.pop(context);
                   },
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-        SizedBox(height: 10.h),
-        Container(
-          padding: EdgeInsets.symmetric(vertical: 4.h, horizontal: 10.w),
-          decoration: BoxDecoration(
-            color: colorScheme.onPrimary,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Theme.of(context).colorScheme.shadow,
-                blurRadius: 2,
-                offset: const Offset(0, 1),
-              )
-            ],
-          ),
-          child: Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  controller.isDayBasedRecurrence.value = false;
-                },
-                child: Row(
-                  children: [
-                    Transform.scale(
-                      scale: 0.8,
-                      child: Radio(
-                        value: false,
-                        groupValue: controller.isDayBasedRecurrence.value,
-                        onChanged: (value) {
-                          controller.isDayBasedRecurrence.value = value as bool;
-                        },
-                        activeColor: colorScheme.primary,
-                        visualDensity:
-                            const VisualDensity(horizontal: -4, vertical: -4),
-                      ),
-                    ),
-                    Text(
-                      'On the',
-                      style: TextStyle(
-                          fontSize: 14.sp, color: colorScheme.onSurface),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(width: 10.w),
-              Flexible(
-                child: CommonDropdown(
-                  value: controller.selectedOccurance.value,
-                  items: const <String>['1st', '2nd', '3rd', '4th', 'Last'],
-                  hintText: 'Select',
-                  onChanged: controller.isDayBasedRecurrence.value
-                      ? null
-                      : (value) {
-                          controller.selectedOccurance.value = value!;
-                        },
-                  paddingVertical: 2,
-                  enabled: !controller.isDayBasedRecurrence.value,
-                ),
-              ),
-              SizedBox(width: 10.w),
-              Flexible(
-                child: CommonDropdown(
-                  value: controller.selectedWeekDay.value,
-                  items: const <String>[
-                    'Mon',
-                    'Tue',
-                    'Wed',
-                    'Thu',
-                    'Fri',
-                    'Sat',
-                    'Sun'
-                  ],
-                  hintText: 'Select',
-                  onChanged: controller.isDayBasedRecurrence.value
-                      ? null
-                      : (value) {
-                          controller.selectedWeekDay.value = value!;
-                        },
-                  paddingVertical: 2,
-                  enabled: !controller.isDayBasedRecurrence.value,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildRecurringShiftOptions(
-      BuildContext context, ColorScheme colorScheme) {
-    return Obx(() => Column(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: colorScheme.onPrimary,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(context).colorScheme.shadow,
-                    blurRadius: 2,
-                    offset: const Offset(0, 1),
-                  )
-                ],
-              ),
-              padding: EdgeInsets.only(left: 10.w, top: 5.h, bottom: 5.h),
-              child: GestureDetector(
-                onTap: () {
-                  controller.isRecurringShift.value =
-                      !controller.isRecurringShift.value;
-                },
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Recurring Shift',
-                        style: TextStyle(
-                          fontSize:
-                              controller.isRecurringShift.value ? 14.sp : 12.sp,
-                          fontWeight: FontWeight.w500,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                    Transform.scale(
-                      scale: controller.isRecurringShift.value ? 1 : 0.8,
-                      child: Checkbox(
-                        value: controller.isRecurringShift.value,
-                        onChanged: (value) {
-                          controller.isRecurringShift.value = value ?? false;
-                        },
-                        activeColor: colorScheme.primary,
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                    )
-                  ],
-                ),
-              ),
+  Future<void> _showWeekDaysDialog(
+      BuildContext context, ColorScheme colorScheme) async {
+    final localWeekDays = Map<String, RxBool>.from(controller.selectedWeekDays);
+
+    await showDialog(
+      context: context,
+      builder: (_) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(20),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: colorScheme.onPrimary,
+              borderRadius: BorderRadius.circular(20),
             ),
-            if (controller.isRecurringShift.value)
-              Container(
-                margin: EdgeInsets.symmetric(vertical: 10.h),
-                padding: EdgeInsets.symmetric(vertical: 6.h, horizontal: 10.w),
-                decoration: BoxDecoration(
-                  color: colorScheme.onPrimary,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(context).colorScheme.shadow,
-                      blurRadius: 2,
-                      offset: const Offset(0, 1),
-                    )
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Select Week Days',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        width: 25.w,
+                        height: 25.h,
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          border:
+                              Border.all(color: colorScheme.error, width: 2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.close,
+                          color: colorScheme.error,
+                          size: 16.sp,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Repeat Every',
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w500,
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                        SizedBox(width: 10.w),
-                        Flexible(
-                          child: CommonTextField(
-                            hintText: 'number',
-                            controller: controller.repeatEveryController,
-                            keyboardType: TextInputType.number,
-                            paddingVertical: 5,
-                            onChanged: (value) {
-                              if (value.isEmpty) {
-                                controller.repeatEveryController.text = '';
-                                return;
-                              }
-                              int? parsedValue = int.tryParse(value);
-                              if (parsedValue == null ||
-                                  parsedValue < 0 ||
-                                  parsedValue > 99) {
-                                Get.snackbar(
-                                  'Invalid input',
-                                  'Please enter a valid number between 1 and 99',
-                                  snackPosition: SnackPosition.BOTTOM,
-                                  backgroundColor: colorScheme.error,
-                                  colorText: colorScheme.onPrimary,
-                                );
-                                controller.repeatEveryController.text = '1';
-                                controller.repeatEveryController.selection =
-                                    TextSelection.fromPosition(
-                                  TextPosition(
-                                      offset: controller
-                                          .repeatEveryController.text.length),
-                                );
-                              }
+                SizedBox(height: 16.h),
+                Wrap(
+                  spacing: 8.w,
+                  runSpacing: 8.h,
+                  children: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
+                      .map((day) => Obx(() => GestureDetector(
+                            onTap: () {
+                              localWeekDays[day]!.value =
+                                  !localWeekDays[day]!.value;
                             },
-                          ),
-                        ),
-                        SizedBox(width: 2.w),
-                        Flexible(
-                          child: CommonDropdown(
-                            value: controller.selectedRecurringShiftType.value,
-                            items: const <String>['days', 'weeks', 'months'],
-                            hintText: 'Select',
-                            onChanged: (value) {
-                              controller.selectedRecurringShiftType.value =
-                                  value!;
-                            },
-                            iconWidth: 16,
-                            paddingVertical: 3,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (controller.selectedRecurringShiftType.value == 'weeks')
-                      Container(
-                        padding: EdgeInsets.symmetric(vertical: 6.h),
-                        margin: EdgeInsets.symmetric(vertical: 10.h),
-                        decoration: BoxDecoration(
-                          color: colorScheme.onPrimary,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Theme.of(context).colorScheme.shadow,
-                              blurRadius: 2,
-                              offset: const Offset(0, 1),
-                            )
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            for (var day in [
-                              'Mo',
-                              'Tu',
-                              'We',
-                              'Th',
-                              'Fr',
-                              'Sa',
-                              'Su'
-                            ])
-                              GestureDetector(
-                                onTap: () {
-                                  controller.selectedWeekDays[day]?.value =
-                                      !controller.selectedWeekDays[day]!.value;
-                                },
-                                child: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color:
-                                        controller.selectedWeekDays[day]!.value
-                                            ? colorScheme.primary
-                                            : colorScheme.onSurface
-                                                .withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(50),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      day,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: controller
-                                                .selectedWeekDays[day]!.value
-                                            ? colorScheme.onSecondary
-                                            : colorScheme.onSurface
-                                                .withOpacity(0.5),
-                                      ),
-                                    ),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: localWeekDays[day]!.value
+                                    ? colorScheme.primary
+                                    : colorScheme.onSurface.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(50),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  day,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: localWeekDays[day]!.value
+                                        ? colorScheme.onSecondary
+                                        : colorScheme.onSurface
+                                            .withOpacity(0.5),
                                   ),
                                 ),
                               ),
-                          ],
-                        ),
-                      ),
-                    if (controller.selectedRecurringShiftType.value == 'months')
-                      Padding(
-                        padding: EdgeInsets.symmetric(vertical: 10.h),
-                        child: _buildMonthlyRecurrenceOptions(
-                            context, colorScheme),
-                      ),
-                  ],
+                            ),
+                          )))
+                      .toList(),
                 ),
-              ),
-          ],
-        ));
+                SizedBox(height: 16.h),
+                CommonButton(
+                  text: 'Save',
+                  onPressed: () {
+                    controller.selectedWeekDays.forEach((key, value) {
+                      value.value = localWeekDays[key]!.value;
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Scaffold(
-      backgroundColor: colorScheme.onPrimary,
-      body: Column(
-        children: [
-          CommonAppBar(
-            title: 'Make Service Request',
-            iconPath: 'assets/icons/calendar.png',
-            colorScheme: colorScheme,
-          ),
-          SizedBox(height: 4.h),
-          Expanded(
-            child: Obx(() {
-              return SingleChildScrollView(
-                child: Container(
-                  width: double.infinity,
-                  margin:
-                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 16.h),
-                  decoration: BoxDecoration(
-                    color: colorScheme.onPrimary,
-                    borderRadius: BorderRadius.circular(12.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: colorScheme.outlineVariant,
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
+  Future<void> _showMonthlyRecurrenceDialog(
+      BuildContext context, ColorScheme colorScheme) async {
+    final dayController =
+        TextEditingController(text: controller.mDayControllerText.value);
+    final localOccurrence = controller.selectedOccurance.value;
+    final localWeekDay = controller.selectedWeekDay.value;
+
+    await showDialog(
+      context: context,
+      builder: (_) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(20),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: colorScheme.onPrimary,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Monthly Recurrence',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        width: 25.w,
+                        height: 25.h,
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          border:
+                              Border.all(color: colorScheme.error, width: 2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.close,
+                          color: colorScheme.error,
+                          size: 16.sp,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+                Obx(() => Row(
                       children: [
-                        _buildBasicDetails(context, colorScheme),
-                        SizedBox(height: 10.h),
-                        _buildRecurringShiftOptions(context, colorScheme),
-                        SizedBox(height: 12.h),
-                        CommonButton(
-                          text: 'Save',
-                          onPressed: controller.isSubmitting.value
-                              ? null
-                              : controller.selectedService.value.isEmpty
-                                  ? null
-                                  : () {
-                                      controller.extractData(
-                                          context, colorScheme);
-                                    },
-                          isSaving: controller.isSubmitting.value,
+                        Radio(
+                          value: true,
+                          groupValue: controller.isDayBasedRecurrence.value,
+                          onChanged: (value) {
+                            controller.isDayBasedRecurrence.value =
+                                value as bool;
+                          },
+                          activeColor: colorScheme.primary,
+                        ),
+                        Text('On day', style: TextStyle(fontSize: 14.sp)),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: TextField(
+                            controller: dayController,
+                            keyboardType: TextInputType.number,
+                            enabled: controller.isDayBasedRecurrence.value,
+                            decoration: InputDecoration(
+                              hintText: '1',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide:
+                                    BorderSide(color: colorScheme.outline),
+                              ),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16.w,
+                                vertical: 12.h,
+                              ),
+                            ),
+                            onChanged: (value) {
+                              if (value.isNotEmpty &&
+                                  int.tryParse(value) != null &&
+                                  int.parse(value) > 31) {
+                                Get.snackbar(
+                                  'Invalid input',
+                                  'Please enter a valid number between 1 and 31',
+                                  backgroundColor: colorScheme.error,
+                                  colorText: colorScheme.onPrimary,
+                                );
+                                dayController.text = '1';
+                              }
+                            },
+                          ),
                         ),
                       ],
-                    ),
-                  ),
+                    )),
+                SizedBox(height: 10.h),
+                Obx(() => Row(
+                      children: [
+                        Radio(
+                          value: false,
+                          groupValue: controller.isDayBasedRecurrence.value,
+                          onChanged: (value) {
+                            controller.isDayBasedRecurrence.value =
+                                value as bool;
+                          },
+                          activeColor: colorScheme.primary,
+                        ),
+                        Text('On the', style: TextStyle(fontSize: 14.sp)),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            value: localOccurrence,
+                            items: const <String>[
+                              '1st',
+                              '2nd',
+                              '3rd',
+                              '4th',
+                              'Last'
+                            ]
+                                .map((String value) => DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value),
+                                    ))
+                                .toList(),
+                            onChanged: controller.isDayBasedRecurrence.value
+                                ? null
+                                : (value) {
+                                    controller.selectedOccurance.value = value!;
+                                  },
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide:
+                                    BorderSide(color: colorScheme.outline),
+                              ),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16.w,
+                                vertical: 12.h,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            value: localWeekDay,
+                            items: const <String>[
+                              'Mon',
+                              'Tue',
+                              'Wed',
+                              'Thu',
+                              'Fri',
+                              'Sat',
+                              'Sun'
+                            ]
+                                .map((String value) => DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value),
+                                    ))
+                                .toList(),
+                            onChanged: controller.isDayBasedRecurrence.value
+                                ? null
+                                : (value) {
+                                    controller.selectedWeekDay.value = value!;
+                                  },
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide:
+                                    BorderSide(color: colorScheme.outline),
+                              ),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16.w,
+                                vertical: 12.h,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )),
+                SizedBox(height: 16.h),
+                CommonButton(
+                  text: 'Save',
+                  onPressed: () {
+                    controller.mDayControllerText.value = dayController.text;
+                    Navigator.pop(context);
+                  },
                 ),
-              );
-            }),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }

@@ -78,14 +78,13 @@ class MakeShiftRequestController extends GetxController {
 
   @override
   void onInit() async {
-    final now = DateTime.now();
-    startDateController.value = DateFormat('dd-MM-yyyy').format(now);
-    endDateController.value = DateFormat('dd-MM-yyyy').format(now);
-    // startTimeController.value = DateFormat('hh:mm aa').format(now);
-    // endTimeController.value = DateFormat('hh:mm aa').format(now.add(const Duration(hours: 1)));
     repeatEveryController.text = '1';
     mDayController.text = '1';
     fetchClientCaseManagerData();
+
+    repeatEveryController.addListener(() {
+      repeatEveryControllerText.value = repeatEveryController.text;
+    });
 
     // Add search listener to filter directly
     searchController.addListener(() {
@@ -475,6 +474,7 @@ class MakeShiftRequestController extends GetxController {
   @override
   void onClose() {
     searchController.dispose();
+    repeatEveryController.dispose();
     super.onClose();
   }
 }
