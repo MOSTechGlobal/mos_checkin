@@ -19,6 +19,8 @@ class AccountController extends GetxController {
   var  companyName = ''.obs;
   var  pfp = ''.obs;
   var isLoading = false.obs;
+  var isPasswordLoading = false.obs;
+  var isForgotPasswordSuccess = false.obs;
 
   final RxMap<dynamic, dynamic> clientData = <dynamic, dynamic>{}.obs;
 
@@ -217,4 +219,48 @@ class AccountController extends GetxController {
     }
   }
 
+  Future<void> handleForgotPassword() async {
+    final email = clientData['Email'] ?? '';
+
+    if (email.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Email address is not available.',
+        snackPosition: SnackPosition.BOTTOM,
+        colorText: Colors.white,
+        backgroundColor: Colors.red,
+      );
+      return;
+    }
+
+    isPasswordLoading(true);
+    try {
+      final response = await Api.post('sendPasswordResetEmail', {
+        'email': email,
+      });
+
+      if (response == null || response['success'] != true) {
+        throw Exception(response?['message'] ?? 'Failed to send password reset email.');
+      }
+
+      isForgotPasswordSuccess(true);
+      Get.snackbar(
+        'Success',
+        'Password reset email sent successfully.',
+        snackPosition: SnackPosition.BOTTOM,
+        colorText: Colors.white,
+        backgroundColor: Colors.green,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        e.toString().replaceFirst('Exception: ', ''),
+        snackPosition: SnackPosition.BOTTOM,
+        colorText: Colors.white,
+        backgroundColor: Colors.red,
+      );
+    } finally {
+      isPasswordLoading(false);
+    }
+  }
 }

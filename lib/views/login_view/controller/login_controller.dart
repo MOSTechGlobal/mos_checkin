@@ -19,6 +19,7 @@ class LoginController extends GetxController {
   var isLoading = false.obs;
   RxString clientId = ''.obs;
   RxString clientName = ''.obs;
+  var isForgotPasswordSuccess = false.obs;
 
   final TextEditingController companyNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -209,6 +210,46 @@ class LoginController extends GetxController {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
       throw 'Could not launch $url';
+    }
+  }
+
+  Future<void> handleForgotPassword() async {
+    if (email.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Please enter your email address.',
+        colorText: Colors.white,
+        backgroundColor: Colors.red,
+      );
+      return;
+    }
+
+    isLoading(true);
+    try {
+      final response = await Api.post('sendPasswordResetEmail', {
+        'email': email.value,
+      });
+
+      if (response == null || response['success'] != true) {
+        throw Exception(response?['message'] ?? 'Failed to send password reset email.');
+      }
+
+      isForgotPasswordSuccess(true);
+      Get.snackbar(
+        'Success',
+        'Password reset email sent successfully.',
+        colorText: Colors.white,
+        backgroundColor: Colors.green,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        e.toString().replaceFirst('Exception: ', ''),
+        colorText: Colors.white,
+        backgroundColor: Colors.red,
+      );
+    } finally {
+      isLoading(false);
     }
   }
 }

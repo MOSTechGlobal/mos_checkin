@@ -122,7 +122,20 @@ class LoginView extends GetView<LoginController> {
                                     onChanged: (value) => controller
                                         .password(value), // Sync with RxString
                                   ),
-                                  SizedBox(height: 4.h),
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: TextButton(
+                                      onPressed: controller.isLoading.value ? null : controller.handleForgotPassword,
+                                      child: Text(
+                                        "Forgot Password?",
+                                        style: TextStyle(
+                                          color: colorScheme.primary,
+                                          fontSize: 12.sp,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                   SizedBox(
                                     width: double.infinity,
                                     child: Row(

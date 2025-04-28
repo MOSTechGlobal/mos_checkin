@@ -41,7 +41,6 @@ class MyAccountView extends GetView<AccountController> {
                                 Navigator.pop(context);
                               },
                             )),
-
                         SizedBox(
                           width: 150.w,
                           child: CommonButton(
@@ -67,7 +66,7 @@ class MyAccountView extends GetView<AccountController> {
                     const SizedBox(height: 20),
                     controller.pfp.value != null
                         ? controller.isLoading.value
-                            ? Center(
+                            ? const Center(
                                 child: CircularProgressIndicator(),
                               )
                             : Container(
@@ -237,8 +236,9 @@ class MyAccountView extends GetView<AccountController> {
                         label: 'Email',
                         validator: (value) {
                           final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                          if (value== null) return 'Email is required';
-                          if (!emailRegex.hasMatch(value)) return 'Enter a valid email';
+                          if (value == null) return 'Email is required';
+                          if (!emailRegex.hasMatch(value))
+                            return 'Enter a valid email';
                           return null;
                         },
                       ),
@@ -253,13 +253,13 @@ class MyAccountView extends GetView<AccountController> {
                           LengthLimitingTextInputFormatter(10),
                         ],
                         validator: (value) {
-                          if (value == null || value.isEmpty) return 'Phone number is required';
-                          if (value.length < 10) return 'Phone number must be 10 digits';
+                          if (value == null || value.isEmpty)
+                            return 'Phone number is required';
+                          if (value.length < 10)
+                            return 'Phone number must be 10 digits';
                           return null;
                         },
                       ),
-
-
                       const SizedBox(height: 20),
                       CommonButton(
                         text: 'Save',
@@ -393,13 +393,10 @@ class MyAccountView extends GetView<AccountController> {
 
                     ///FORGET PASSWORD BUTTON
                     CommonButton(
-                      onPressed: () {
-                        Get.snackbar('Forget Password',
-                            'Please contact your admin to reset your password',
-                            snackPosition: SnackPosition.BOTTOM,
-                            backgroundColor: colorScheme.error,
-                            colorText: colorScheme.onPrimary);
-                      },
+                      isSaving: controller.isPasswordLoading.value,
+                      onPressed: controller.isPasswordLoading.value
+                          ? null
+                          : controller.handleForgotPassword,
                       text: 'Forget Password',
                       textColor: colorScheme.onPrimary,
                     ),
