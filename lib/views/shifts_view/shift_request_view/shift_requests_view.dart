@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:mos_checkin/views/shifts_view/shift_request_view/widgets/shift_req_multi_filter_pop_up.dart';
 import 'package:mos_checkin/views/shifts_view/shift_request_view/widgets/shift_request_dialog.dart';
 
 import '../../../shimmers/shimmer_view_shift_request.dart';
@@ -15,6 +16,24 @@ import 'widgets/filter_popup_menu.dart';
 class ShiftRequestsView extends GetView<ShiftRequestViewController> {
   const ShiftRequestsView({super.key});
 
+  // void _showCustomMenu(BuildContext context) {
+  //   showGeneralDialog(
+  //     context: context,
+  //     barrierDismissible: true,
+  //     barrierLabel: "Menu",
+  //     barrierColor: Colors.transparent,
+  //     pageBuilder: (context, anim1, anim2) {
+  //       return const FilterPopupMenu();
+  //     },
+  //     transitionBuilder: (context, anim1, anim2, child) {
+  //       return FadeTransition(
+  //         opacity: anim1,
+  //         child: child,
+  //       );
+  //     },
+  //   );
+  // }
+
   void _showCustomMenu(BuildContext context) {
     showGeneralDialog(
       context: context,
@@ -22,7 +41,7 @@ class ShiftRequestsView extends GetView<ShiftRequestViewController> {
       barrierLabel: "Menu",
       barrierColor: Colors.transparent,
       pageBuilder: (context, anim1, anim2) {
-        return const FilterPopupMenu();
+        return const ShiftReqMultiFilter();
       },
       transitionBuilder: (context, anim1, anim2, child) {
         return FadeTransition(
@@ -32,7 +51,6 @@ class ShiftRequestsView extends GetView<ShiftRequestViewController> {
       },
     );
   }
-
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -191,7 +209,7 @@ class ShiftRequestsView extends GetView<ShiftRequestViewController> {
     Color statusColor = shiftStatus == 'P'
         ? const Color(0xFFFFC600)
         : shiftStatus == 'A'
-        ? colorScheme.secondary
+        ? Colors.green.withOpacity(0.4)
         : colorScheme.error;
 
     return GestureDetector(

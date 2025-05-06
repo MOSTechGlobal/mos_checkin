@@ -20,6 +20,8 @@ class ShiftRequestViewController extends GetxController {
   var shiftRequests = <Map<String, dynamic>>[].obs;
   var filteredShiftRequests = <Map<String, dynamic>>[].obs;
   var selectedStatus = 'all'.obs; // Default status
+  var searchText =''.obs;
+  var searchController = TextEditingController();
 
   var clientId = ''.obs;
 
@@ -31,6 +33,10 @@ class ShiftRequestViewController extends GetxController {
     everAll([selectedDateFrom, selectedDateTo], (_) => filterShifts());
     ever(selectedStatus, (_) => filterShifts());
     fetchClientShiftRequests();
+    searchController.addListener((){
+      searchText.value = searchController.text;
+      filterShifts();
+    });
   }
 
   String getFormattedDateRange() {
@@ -100,11 +106,14 @@ class ShiftRequestViewController extends GetxController {
             createdOn.isBefore(selectedDateTo.value.add(const Duration(days: 1)));
 
         // Status filter
-        final formStatus = (note['Status'] ?? '').toLowerCase();
+        final reqStatus = (note['Status'] ?? '').toLowerCase();
+        final searchQuery = searchText.value.toLowerCase();
+        final reqService = (note['ServiceDescription']??'').toLowerCase();
+        final matchesSearch = searchQuery.isEmpty || reqService.contains(searchQuery);
         final matchesStatus = selectedStatus.value.toLowerCase() == 'all' ||
-            formStatus == selectedStatus.value.toLowerCase();
+            reqStatus == selectedStatus.value.toLowerCase();
 
-        return isWithinDateRange && matchesStatus;
+        return isWithinDateRange && matchesStatus && matchesSearch;
       }).toList(),
     );
     log('Filtered shifts: ${filteredShiftRequests.length} items with status: ${selectedStatus.value}');
@@ -299,5 +308,10 @@ class ShiftRequestViewController extends GetxController {
         );
       },
     );
+  }
+  void clearSearch() {
+    searchController.clear();
+    searchText.value = '';
+    filterShifts();
   }
 }

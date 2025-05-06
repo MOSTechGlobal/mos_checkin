@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../utils/api.dart';
@@ -20,10 +21,17 @@ class FormController extends GetxController {
 
   var selectedStatus = 'all'.obs; // Default status
 
+  //search fields
+  var searchText =''.obs;
+  var searchController = TextEditingController();
   @override
   void onInit() {
     super.onInit();
     fetchAssignedForms();
+    searchController.addListener((){
+      searchText.value = searchController.text;
+      filterForms();
+    });
   }
 
   /// Fetches all completed forms from the API
@@ -60,6 +68,9 @@ class FormController extends GetxController {
   /// Filters forms based on the search query and selected date range
   void filterForms() {
     filteredForms.value = allForms.where((form) {
+      final searchQuery = searchText.value.toLowerCase();
+      final formName = (form['TemplateName'] ?? form['Name'] ?? '').toLowerCase();
+      final matchesSearch = searchQuery.isEmpty || formName.contains(searchQuery);
       final dateField =
           form.containsKey('AssignedDate') ? 'AssignedDate' : 'CreatedAt';
       if (form[dateField] == null) return false;
@@ -80,7 +91,7 @@ class FormController extends GetxController {
       final matchesStatus = selectedStatus.value.toLowerCase() == 'all' ||
           formStatus == selectedStatus.value.toLowerCase();
 
-      return isWithinDateRange && matchesStatus;
+      return isWithinDateRange && matchesStatus && matchesSearch;
     }).toList();
   }
 
@@ -115,5 +126,11 @@ class FormController extends GetxController {
     if (groupedForms.isEmpty) return [];
     return groupedForms.keys.toList()
       ..sort((a, b) => DateTime.parse(a).compareTo(DateTime.parse(b)));
+  }
+
+  void clearSearch() {
+    searchController.clear();
+    searchText.value = '';
+    filterForms();
   }
 }

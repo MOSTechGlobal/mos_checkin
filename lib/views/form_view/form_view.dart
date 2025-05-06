@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:mos_checkin/views/form_view/widgets/filter_popup_menu.dart';
+import 'package:mos_checkin/views/form_view/widgets/multi_filter_pop_up.dart';
 
 import '../../shimmers/shimmer_form_view.dart';
 import '../../utils/common_widgets/common_app_bar.dart';
@@ -245,6 +246,24 @@ class FormsView extends GetView<FormController> {
     );
   }
 
+  // void _showCustomMenu(BuildContext context) {
+  //   showGeneralDialog(
+  //     context: context,
+  //     barrierDismissible: true,
+  //     barrierLabel: "Menu",
+  //     barrierColor: Colors.transparent,
+  //     pageBuilder: (context, anim1, anim2) {
+  //       return const FilterPopupMenu();
+  //     },
+  //     transitionBuilder: (context, anim1, anim2, child) {
+  //       return FadeTransition(
+  //         opacity: anim1,
+  //         child: child,
+  //       );
+  //     },
+  //   );
+  // }
+
   void _showCustomMenu(BuildContext context) {
     showGeneralDialog(
       context: context,
@@ -252,7 +271,7 @@ class FormsView extends GetView<FormController> {
       barrierLabel: "Menu",
       barrierColor: Colors.transparent,
       pageBuilder: (context, anim1, anim2) {
-        return const FilterPopupMenu();
+        return const FormMultiFilter();
       },
       transitionBuilder: (context, anim1, anim2, child) {
         return FadeTransition(
