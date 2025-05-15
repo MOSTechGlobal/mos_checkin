@@ -3,6 +3,22 @@ import 'package:get/get.dart';
 import '../auth/auth.dart';
 import '../views/account_view/binding/account_binding.dart';
 import '../views/account_view/my_account_view.dart';
+import '../views/chatting_home_view/add_group_members_view/add_group_members_view.dart';
+import '../views/chatting_home_view/add_group_members_view/binding/add_group_members_binding.dart';
+import '../views/chatting_home_view/bindings/chatting_home_binding.dart';
+import '../views/chatting_home_view/chat_screen_view/binding/chat_screen_binding.dart';
+import '../views/chatting_home_view/chat_screen_view/chat_screen_view.dart';
+import '../views/chatting_home_view/chatting_home_screen.dart';
+import '../views/chatting_home_view/group_chat_view/binding/group_chat_binding.dart';
+import '../views/chatting_home_view/group_chat_view/group_chat_view.dart';
+import '../views/chatting_home_view/group_profile_view/binding/group_profile_binding.dart';
+import '../views/chatting_home_view/group_profile_view/group_profile_view.dart';
+import '../views/chatting_home_view/group_user_add_view/binding/group_user_add_binding.dart';
+import '../views/chatting_home_view/group_user_add_view/group_user_add_view.dart';
+import '../views/chatting_home_view/users_screen_view/binding/users_screen_binding.dart';
+import '../views/chatting_home_view/users_screen_view/users_screen_view.dart';
+import '../views/chatting_home_view/view_profile_view/binding/view_profile_binding.dart';
+import '../views/chatting_home_view/view_profile_view/view_profile_view.dart';
 import '../views/form_view/binding/form_binding.dart';
 import '../views/form_view/binding/form_detail_bonding.dart';
 import '../views/form_view/form_view.dart';
@@ -29,6 +45,14 @@ class AppRoutes {
   static const String makeShiftRequest = '/makeShiftRequest';
   static const String account = '/account';
   static const String privacy = '/privacy';
+  static const String chattingHome = '/chatting_home';
+  static const String viewProfileView = '/view_profile_view';
+  static const String groupUserAddView = '/group_user_add_view';
+  static const String groupChatView = '/group_chat_view';
+  static const String groupProfileView = '/group_profile_view';
+  static const String addGroupMembersView = '/add_group_members_view';
+  static const String chatScreenView = '/chat_screen_view';
+  static const String usersScreenView = '/users_screen_view';
 
   static List<GetPage> routes = [
     GetPage(
@@ -75,5 +99,37 @@ class AppRoutes {
       },
       binding: MakeShiftRequestBinding(),
     ),
+    GetPage(
+        name: chattingHome,
+        page: () => const ChattingHomeScreen(),
+        binding: ChattingHomeBinding()),
+    GetPage(
+        name: usersScreenView,
+        page: () => const UsersScreenView(),
+        binding: UsersScreenBinding()),
+    GetPage(
+        name: chatScreenView,
+        page: () => const ChatScreenView(),
+        binding: ChatScreenBinding()),
+    GetPage(
+        name: viewProfileView,
+        page: () => const ViewProfileView(),
+        binding: ViewProfileBinding()),
+    GetPage(
+        name: groupUserAddView,
+        page: () => const GroupUserAddView(),
+        binding: GroupUserAddBinding()),
+    GetPage(
+        name: groupChatView,
+        page: () => const GroupChatView(),
+        binding: GroupChatBinding()),
+    GetPage(
+        name: groupProfileView,
+        page: () => const GroupProfileView(),
+        binding: GroupProfileBinding()),
+    GetPage(
+        name: addGroupMembersView,
+        page: () => const AddGroupMembersView(),
+        binding: AddGroupMembersBinding()),
   ];
 }

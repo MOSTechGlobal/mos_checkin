@@ -63,16 +63,27 @@ dependencies:
   flutter_dotenv: ^5.1.0
   flutter_calendar_week: ^3.0.2
   slide_to_act:
-#  workmanager:
   alarm: ^3.1.5
-#  fluttertoast: ^8.2.8
-#  audioplayers: ^6.0.0
   get: ^4.6.6
   flutter_screenutil: ^5.9.3
   shimmer:
   package_info_plus: ^4.2.0
   new_version_plus:
   timezone:
+  emoji_picker_flutter:
+  cached_network_image:
+  flutter_image_compress:
+  video_compress:
+  video_player:
+  mime:
+  open_file: ^3.5.3
+  firebase_storage:
+  flutter_contacts:
+  audioplayers:
+  record:
+  cloud_firestore:
+  path_provider:
+  google_maps_flutter:
 
 dev_dependencies:
   flutter_test:
